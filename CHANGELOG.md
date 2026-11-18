@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — v1.0 hardening (not a v1.0.0 tag)
+
+Engineering toward `v1.0.0-rc.1` on `release/v1.0-hardening`. Packages, GitHub Releases, and the stable tag are still unpublished.
+
+### Added
+
+- Native GitHub Actions matrix: Linux x64/ARM64, Windows x64, macOS Intel/ARM64; Windows ARM64 experimental
+- rustfmt + clippy job; Python 3.11–3.13 unit matrix; linux/arm64 Docker smoke job
+- Sandbox examples: bank-account-update, travel-booking, enterprise-access
+- Adversarial verification, mixed Python/TypeScript runtime, and migration inventory tests
+- `docs/release/v1.0-*` execution, audit, gates, and platform reports
+
 ## Unreleased — GitHub baseline / CI (not a v1.0 tag)
 
 Private repository connected. Required GitHub Actions jobs are green on `main` at `e7d5b70`. Packages and public releases are still not published.

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, release/v1.0-hardening]
   pull_request:
 
 permissions:
@@ -16,6 +16,21 @@ concurrency:
 # Optional future secrets (not wired): OIDC_ISSUER, OIDC_JWKS_URL for a hosted IdP job.
 
 jobs:
+  rust-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.98.0
+          components: rustfmt, clippy
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+      - name: clippy
+        # Style/pedantic warnings exist in tree; do not rewrite the runtime to silence them.
+        # correctness + suspicious remain deny-level release gates.
+        run: cargo clippy --workspace --all-targets -- -D clippy::correctness -D clippy::suspicious
+
   rust:
     runs-on: ubuntu-latest
     steps:
@@ -29,6 +44,89 @@ jobs:
         run: cargo run -p goshikq-bench -- --sizes 10,100 --trials 3 --seed 42 --out /tmp/evidence-bench.json
       - name: Export OpenAPI
         run: cargo run -q -p goshikq-server -- --export-openapi docs/api/openapi.json
+
+  native-runtime:
+    name: native-${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64
+            os: ubuntu-latest
+            experimental: false
+          - name: linux-arm64
+            os: ubuntu-24.04-arm
+            experimental: false
+          - name: windows-amd64
+            os: windows-latest
+            experimental: false
+          - name: macos-arm64
+            os: macos-latest
+            experimental: false
+          - name: macos-amd64
+            os: macos-15-intel
+            experimental: false
+          - name: windows-arm64
+            os: windows-11-arm
+            experimental: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.98.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native unit tests and server build
+        run: |
+          cargo test --workspace --lib
+          cargo build -p goshikq-server
+      - name: Embedded-runtime smoke (hello-agent)
+        env:
+          DATABASE_URL: embedded
+          GOSHIKQ_AUTH_MODE: none
+          GOSHIKQ_BIND: 127.0.0.1:7400
+          GOSHIKQ_RUNTIME_URL: http://127.0.0.1:7400
+        run: |
+          BIN=target/debug/goshikq-server
+          if [ -f target/debug/goshikq-server.exe ]; then BIN=target/debug/goshikq-server.exe; fi
+          "$BIN" &
+          echo $! > /tmp/goshikq-server.pid
+          python -m pip install -e sdk/python httpx pytest
+          ok=0
+          for i in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:7400/ready; then ok=1; break; fi
+            sleep 2
+          done
+          if [ "$ok" != "1" ]; then
+            echo "goshikq-server did not become ready on ${{ matrix.name }}" >&2
+            exit 1
+          fi
+          python -m pytest examples/hello-agent sdk/python/tests -q
+          python examples/hello-agent/main.py
+
+
+  python-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: SDK unit tests
+        working-directory: sdk/python
+        run: |
+          python -m pip install -e ".[dev]"
+          pytest
 
   python-sdk:
     runs-on: ubuntu-latest
@@ -47,7 +145,9 @@ jobs:
       - name: Example unit tests
         run: |
           python -m pip install -e sdk/python
-          python -m pytest examples/hello-agent examples/tool-agent examples/retail-refund -q
+          for d in examples/hello-agent examples/tool-agent examples/retail-refund examples/bank-account-update examples/travel-booking examples/enterprise-access; do
+            python -m pytest "$d" -q
+          done
 
   typescript:
     runs-on: ubuntu-latest
@@ -155,7 +255,7 @@ jobs:
           exit 1
       - name: Security, crash, evidence, multi-agent, workflow, OTEL, retention
         run: |
-          python -m pytest tests/security tests/isolation tests/crash tests/evidence tests/multi_agent tests/workflows tests/otel tests/reliability tests/protocol -q
+          python -m pytest tests/security tests/isolation tests/crash tests/evidence tests/multi_agent tests/workflows tests/otel tests/reliability tests/protocol tests/e2e tests/postgres -q
 
   packaging:
     runs-on: ubuntu-latest
@@ -248,7 +348,16 @@ jobs:
       - name: Compose smoke
         run: bash scripts/docker-smoke.sh
       - name: Record
-        run: echo "docker-smoke ran on GitHub-hosted ubuntu-latest. Local Windows authoring host has no Docker CLI and must not claim this job."
+        run: echo "docker-smoke ran on GitHub-hosted ubuntu-latest (linux/amd64). Local Windows authoring host has no Docker CLI and must not claim this job."
+
+  docker-smoke-arm:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compose smoke (linux/arm64 native)
+        run: bash scripts/docker-smoke.sh
+      - name: Record
+        run: echo "docker-smoke ran on GitHub-hosted ubuntu-24.04-arm (linux/arm64 native, not cross-compiled)."
 
   security-scans:
     runs-on: ubuntu-latest

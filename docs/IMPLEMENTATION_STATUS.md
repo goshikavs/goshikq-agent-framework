@@ -2,6 +2,8 @@
 
 Honest inventory as of 2026-10-30 UTC (**v0.9.1** release-gate closure in tree). Features are **available**, **experimental**, or **planned**. Nothing here is marked available unless it runs against persisted data or real code paths.
 
+v1.0 engineering continues on `release/v1.0-hardening`. See `docs/release/v1.0-readiness-audit.md` and `docs/release/v1.0-release-gates.md`. **v1.0.0 is not tagged or published.**
+
 Latest milestone: **v0.9.1** (`docs/milestones/v0.9.1-report.md`). v1.0 is **not** ready (`docs/release/v1.0-readiness.md`). Temporal is deferred. No commit/push/publish this cycle.
 
 ## Commands re-run on this host (v0.9.1)

@@ -96,15 +96,10 @@ pub fn default_data_dir() -> PathBuf {
     if let Some(p) = goshikq_core::env::branded("EMBEDDED_PG_DIR") {
         return PathBuf::from(p);
     }
-    let modern = PathBuf::from(".goshikq/postgres");
-    let legacy = PathBuf::from(".axiom/postgres");
-    if modern.exists() {
-        modern
-    } else if legacy.exists() {
-        legacy
-    } else {
-        modern
-    }
+    // Do not silently reuse a pre-rebrand `.axiom/postgres` cluster. Those
+    // directories can contain modified sqlx checksums. Operators who still
+    // need the old files must set GOSHIKQ_EMBEDDED_PG_DIR explicitly.
+    PathBuf::from(".goshikq/postgres")
 }
 
 fn cluster_credentials(data_dir: &std::path::Path) -> (&'static str, &'static str) {

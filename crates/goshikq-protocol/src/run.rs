@@ -605,4 +605,19 @@ mod tests {
         assert_eq!(v["goal_satisfied"], false);
         assert_eq!(v["verification_status"], "INCONCLUSIVE");
     }
+
+    #[test]
+    fn completed_execution_is_not_verified() {
+        assert_ne!(
+            RunStatus::Completed.as_str(),
+            VerificationStatus::Verified.as_str()
+        );
+        assert!(RunStatus::Unverified.is_terminal());
+        assert_ne!(RunStatus::Completed, RunStatus::Unverified);
+        assert_eq!(ToolStatus::Succeeded.as_str(), "SUCCEEDED");
+        assert_ne!(
+            ToolStatus::Succeeded.as_str(),
+            VerificationStatus::Verified.as_str()
+        );
+    }
 }
