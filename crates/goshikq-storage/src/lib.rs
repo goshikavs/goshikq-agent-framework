@@ -41,6 +41,12 @@ pub enum StorageError {
 
 pub type DbResult<T> = Result<T, StorageError>;
 
+/// sqlx 0.9 rejects non-`'static` SQL unless it is explicitly audited.
+/// Callers must only interpolate compile-time fragments or allowlisted identifiers.
+pub(crate) fn audited_sql(sql: String) -> sqlx::AssertSqlSafe<String> {
+    sqlx::AssertSqlSafe(sql)
+}
+
 #[derive(Clone)]
 pub struct Db {
     pool: PgPool,

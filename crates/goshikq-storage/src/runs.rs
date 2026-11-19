@@ -10,7 +10,9 @@ use serde_json::{json, Value};
 use uuid::Uuid;
 
 use crate::events::append_in_tx;
-use crate::{sha256_hex, CheckpointRow, Db, DbResult, Page, RunRow, RunStepRow, StorageError};
+use crate::{
+    audited_sql, sha256_hex, CheckpointRow, Db, DbResult, Page, RunRow, RunStepRow, StorageError,
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct RunFilter {
@@ -245,7 +247,7 @@ impl Db {
                ORDER BY {order_sql} LIMIT $11 OFFSET $12"#
         );
         let project_pat = f.project.as_ref().map(|s| format!("%{s}%"));
-        let rows = sqlx::query_as::<_, RunRow>(&select)
+        let rows = sqlx::query_as::<_, RunRow>(audited_sql(select))
             .bind(project_id)
             .bind(&f.status)
             .bind(&f.verification_status)

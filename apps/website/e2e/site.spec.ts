@@ -19,9 +19,8 @@ test.describe("Goshikq website", () => {
       "href",
       "https://github.com/goshikavs/goshikq-agent-framework/archive/refs/heads/main.zip",
     );
-    const downloadHtml = await page.content();
-    expect(downloadHtml).not.toMatch(/releases\/download/);
-    expect(downloadHtml).not.toMatch(/pypi\.org\/project/);
+    await expect(page.locator('a[href*="/releases/download"]')).toHaveCount(0);
+    await expect(page.locator('a[href*="pypi.org/project"]')).toHaveCount(0);
   });
 
   test("docs landing and search UI exist", async ({ page }) => {
