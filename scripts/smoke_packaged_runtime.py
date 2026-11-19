@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import tarfile
@@ -48,21 +49,48 @@ def http_ok(url: str, timeout: float = 2.0) -> bool:
         return False
 
 
+def port_listening(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(0.3)
+        try:
+            sock.connect(("127.0.0.1", port))
+            return True
+        except OSError:
+            return False
+
+
+def wait_ports_free(ports: list[int], seconds: float = 40) -> None:
+    deadline = time.time() + seconds
+    while time.time() < deadline:
+        if not any(port_listening(p) for p in ports):
+            return
+        time.sleep(0.5)
+    busy = [p for p in ports if port_listening(p)]
+    raise SystemExit(f"ports still in use after shutdown: {busy}")
+
+
 def stop(proc: subprocess.Popen) -> None:
-    if proc.poll() is not None:
-        return
-    if os.name == "nt":
-        proc.terminate()
-        try:
-            proc.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-    else:
-        proc.send_signal(signal.SIGTERM)
-        try:
-            proc.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            proc.kill()
+    if proc.poll() is None:
+        if os.name == "nt":
+            # Theseus PostgreSQL is a child process. Terminate() leaves it
+            # holding the data directory on Windows; /T kills the tree.
+            subprocess.run(
+                ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            try:
+                proc.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+        else:
+            proc.send_signal(signal.SIGTERM)
+            try:
+                proc.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+    wait_ports_free([17400, 55439])
 
 
 def wait_ready(base: str, proc: subprocess.Popen, log: Path, seconds: int = 180) -> None:
