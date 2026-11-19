@@ -3,6 +3,7 @@ import { PermissionDeniedError, SchemaValidationError, ToolError } from "./error
 import { Evidence, withEvidence } from "./evidence.ts";
 import { jsonable } from "./json.ts";
 import { defineTool, type Effect, type Risk, type Tool, Verifier } from "./tool.ts";
+import { VERSION } from "./version.ts";
 import { z, type ZodType } from "zod";
 
 export type McpTransport =
@@ -70,7 +71,7 @@ export class McpClient {
     const init = (await this.call("initialize", {
       protocolVersion: "2024-11-05",
       capabilities: { roots: { listChanged: false } },
-      clientInfo: { name: "goshikq-typescript", version: "0.1.0-alpha" },
+      clientInfo: { name: "goshikq-typescript", version: VERSION },
     })) as Record<string, unknown>;
     this.capabilities = (init.capabilities as Record<string, unknown>) ?? {};
     await this.notify("notifications/initialized", {});

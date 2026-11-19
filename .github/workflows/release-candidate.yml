@@ -1,0 +1,315 @@
+name: Release candidate
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      candidate:
+        description: Candidate version label (does not create a git tag)
+        required: false
+        default: "1.0.0-rc.1"
+  push:
+    branches: [release/v1.0-hardening]
+    paths:
+      - Cargo.toml
+      - Cargo.lock
+      - crates/**
+      - apps/cli/**
+      - scripts/package_release.py
+      - scripts/smoke_packaged_runtime.py
+      - scripts/assert_rc_versions.py
+      - scripts/assert_unused_sqlx_backends.py
+      - .github/workflows/release-candidate.yml
+      - LICENSE
+  pull_request:
+    paths:
+      - Cargo.toml
+      - Cargo.lock
+      - crates/**
+      - apps/cli/**
+      - scripts/package_release.py
+      - scripts/smoke_packaged_runtime.py
+      - scripts/assert_rc_versions.py
+      - scripts/assert_unused_sqlx_backends.py
+      - .github/workflows/release-candidate.yml
+      - LICENSE
+
+# Does not create git tags, GitHub Releases, or registry publications.
+permissions:
+  contents: read
+
+concurrency:
+  group: rc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CANDIDATE: ${{ github.event.inputs.candidate || '1.0.0-rc.1' }}
+  RUST_TOOLCHAIN: "1.98.0"
+
+jobs:
+  metadata:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Assert RC versions
+        run: python scripts/assert_rc_versions.py
+      - name: Assert sqlx mysql/sqlite are not in the runtime graph
+        run: python scripts/assert_unused_sqlx_backends.py
+      - name: cargo audit (lockfile)
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+
+  build-native:
+    name: rc-${{ matrix.name }}
+    needs: metadata
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64
+            os: ubuntu-24.04
+            experimental: false
+          - name: linux-arm64
+            os: ubuntu-24.04-arm
+            experimental: false
+          - name: windows-amd64
+            os: windows-latest
+            experimental: false
+          - name: macos-arm64
+            os: macos-latest
+            experimental: false
+          - name: macos-amd64
+            os: macos-15-intel
+            experimental: false
+          - name: windows-arm64
+            os: windows-11-arm
+            experimental: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Release profile build
+        run: cargo build --release -p goshikq-server -p goshikq-cli
+      - name: Refuse debug binaries
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          rel = Path("target/release")
+          debug = Path("target/debug")
+          names = ["goshikq-server", "goshikq-server.exe", "goshikq", "goshikq.exe"]
+          found = [rel / n for n in names if (rel / n).exists()]
+          assert found, "release binaries missing"
+          for p in found:
+              # MSVC debug is typically much larger; still require release dir.
+              print(p, p.stat().st_size)
+          if debug.exists():
+              print("debug dir exists from prior steps; packaging uses target/release only")
+          PY
+      - name: Package archive
+        run: |
+          extra=""
+          if [ "${{ matrix.experimental }}" = "true" ]; then extra="--experimental"; fi
+          python scripts/package_release.py --platform "${{ matrix.name }}" --version "$CANDIDATE" --commit "${{ github.sha }}" $extra
+      - name: Olson UTC for sqlx
+        if: runner.os != 'Windows'
+        run: |
+          python3 - <<'PY'
+          import os, struct
+          from pathlib import Path
+          def section():
+              return b"TZif2" + b"\x00"*15 + struct.pack(">6I", 0, 0, 0, 0, 1, 4) + struct.pack(">iBB", 0, 0, 0) + b"UTC\x00"
+          Path(os.environ.get("RUNNER_TEMP", "/tmp"), "goshikq-UTC").write_bytes(section() + section() + b"\nUTC0\n")
+          PY
+          UTC="${RUNNER_TEMP:-/tmp}/goshikq-UTC"
+          sudo mkdir -p /usr/share/zoneinfo/Etc || true
+          sudo cp "$UTC" /usr/share/zoneinfo/UTC || true
+          sudo cp "$UTC" /usr/share/zoneinfo/Etc/UTC || true
+      - name: Smoke packaged archive
+        run: |
+          ARCHIVE=$(ls dist/goshikq-${CANDIDATE}-${{ matrix.name }}.tar.gz dist/goshikq-${CANDIDATE}-${{ matrix.name }}.zip 2>/dev/null | head -n1)
+          python scripts/smoke_packaged_runtime.py --archive "$ARCHIVE"
+      - name: Upload platform archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-goshikq-${{ matrix.name }}
+          path: dist/goshikq-${{ env.CANDIDATE }}-${{ matrix.name }}.*
+          if-no-files-found: error
+      - name: Provenance sidecar
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          Path("dist").mkdir(exist_ok=True)
+          Path("dist/provenance.json").write_text(json.dumps({
+              "commit": os.environ["GITHUB_SHA"],
+              "ref": os.environ.get("GITHUB_REF"),
+              "run": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
+              "job": os.environ.get("GITHUB_JOB"),
+              "runner_os": os.environ.get("RUNNER_OS"),
+              "runner_arch": os.environ.get("RUNNER_ARCH"),
+              "platform": "${{ matrix.name }}",
+              "profile": "release",
+              "experimental": "${{ matrix.experimental }}",
+              "candidate": os.environ.get("CANDIDATE"),
+          }, indent=2) + "\n", encoding="utf-8")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provenance-${{ matrix.name }}
+          path: dist/provenance.json
+
+  sbom:
+    runs-on: ubuntu-24.04
+    needs: metadata
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: goshikq-${{ env.CANDIDATE }}.spdx.json
+          output-file: dist/sbom/goshikq.spdx.json
+      - name: License inventory
+        run: python scripts/generate_license_inventory.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goshikq-sbom-inventory
+          path: dist/sbom/
+
+  checksums:
+    runs-on: ubuntu-24.04
+    needs: [build-native, sbom]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-goshikq-*
+          path: artifacts
+          merge-multiple: true
+      - name: SHA256SUMS and integrity
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          : > dist/SHA256SUMS
+          python - <<'PY'
+          import hashlib, json, os, pathlib
+          root = pathlib.Path("artifacts")
+          lines = []
+          files = []
+          for p in sorted(root.rglob("*")):
+              if not p.is_file() or p.name.endswith(".sha256"):
+                  continue
+              if p.suffix == ".zip" or p.name.endswith(".tar.gz"):
+                  h = hashlib.sha256(p.read_bytes()).hexdigest()
+                  lines.append(f"{h}  {p.name}")
+                  sidecar = p.with_name(p.name + ".sha256")
+                  if sidecar.exists():
+                      claimed = sidecar.read_text(encoding="utf-8").split()[0]
+                      if claimed != h:
+                          raise SystemExit(f"checksum mismatch {p.name}: {claimed} != {h}")
+                  files.append({"filename": p.name, "sha256": h})
+          pathlib.Path("dist/SHA256SUMS").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          pathlib.Path("dist/artifact-manifest.json").write_text(json.dumps({
+              "commit": os.environ["GITHUB_SHA"],
+              "candidate": os.environ.get("CANDIDATE", "1.0.0-rc.1"),
+              "run": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
+              "artifacts": files,
+              "publication": "CI artifacts only. No GitHub Release, tag, or registry publish.",
+          }, indent=2) + "\n", encoding="utf-8")
+          print(pathlib.Path("dist/SHA256SUMS").read_text(encoding="utf-8"))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goshikq-SHA256SUMS
+          path: |
+            dist/SHA256SUMS
+            dist/artifact-manifest.json
+      - name: Gate summary
+        run: |
+          echo "## Goshikq ${CANDIDATE} (not published)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- commit \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- no git tag, GitHub Release, or registry publish from this workflow" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat dist/SHA256SUMS >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+  sdk-pack:
+    runs-on: ubuntu-24.04
+    needs: metadata
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: goshikq
+          POSTGRES_DB: goshikq
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d goshikq"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:goshikq@127.0.0.1:5432/goshikq
+      GOSHIKQ_AUTH_MODE: none
+      GOSHIKQ_BIND: 127.0.0.1:7400
+      GOSHIKQ_RUNTIME_URL: http://127.0.0.1:7400
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - run: cargo build --release -p goshikq-server
+      - run: python -m pip install httpx pytest build hatchling
+      - name: Start release-profile runtime
+        run: |
+          ./target/release/goshikq-server &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:7400/ready && exit 0; sleep 1; done
+          echo "goshikq-server did not become ready" >&2
+          exit 1
+      - name: Isolated SDK installs against release runtime
+        run: python -m pytest tests/packaging -q
+      - name: Upload SDK distributions (not published)
+        run: |
+          python -m build --wheel --sdist --outdir dist/sdk sdk/python
+          (cd sdk/typescript && bun pm pack && mv goshikq-sdk-*.tgz ../../dist/sdk/)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goshikq-sdk-distributions
+          path: dist/sdk/

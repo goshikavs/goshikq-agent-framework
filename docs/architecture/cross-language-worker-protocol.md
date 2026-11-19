@@ -16,7 +16,7 @@ On `create_run`, TypeScript sends `source_framework: goshikq-typescript` and met
 
 ```json
 {
-  "sdk_version": "0.1.0-alpha",
+  "sdk_version": "1.0.0-rc.1",
   "protocol_version": "1.0",
   "worker": {
     "identity": "<uuid>",

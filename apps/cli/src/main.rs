@@ -167,7 +167,9 @@ impl Client {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
             reqwest::header::USER_AGENT,
-            "goshikq-cli/0.1.0-alpha".parse().unwrap(),
+            concat!("goshikq-cli/", env!("CARGO_PKG_VERSION"))
+                .parse()
+                .unwrap(),
         );
         if let Some(k) = api_key {
             headers.insert(

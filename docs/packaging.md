@@ -1,10 +1,10 @@
 # Packaging
 
-Nothing is published to PyPI, npm, or crates.io in v0.9.1.
+Nothing is published to PyPI, npm, or crates.io for `1.0.0-rc.1`. Owner approval is required before any registry or GitHub Release.
 
 ## Python (`sdk/python`)
 
-- `pyproject.toml` with hatchling, version `0.1.0a1`
+- `pyproject.toml` with hatchling, version `1.0.0rc1` (PEP 440)
 - Optional extras: `openai`, `anthropic`, `dev`
 - Isolated install (temp venv **outside** the repo): `python -m pytest tests/packaging/test_isolated_install.py`
 - Local smoke: `python -m build` then `pip install dist/*.whl` and `python -c "import goshikq_ai"`
@@ -13,13 +13,13 @@ Nothing is published to PyPI, npm, or crates.io in v0.9.1.
 
 - ESM package `@goshikq/sdk` shipping TypeScript sources for Bun
 - `engines.node: >=20`; Node consumers should use Bun or a TypeScript loader. A compiled `dist/` emit is not the supported path in this alpha
-- Local smoke: `bun pm pack` then `bun add ./goshikq-ai-sdk-0.1.0-alpha.tgz`
+- Local smoke: `bun pm pack` then `bun add ./goshikq-sdk-1.0.0-rc.1.tgz`
 
 ## Rust runtime
 
-- Workspace version `0.1.0-alpha`
+- Workspace version `1.0.0-rc.1` (Cargo/SemVer prerelease)
 - `GET /health` reports `version`
-- Platform: Windows x64 MSVC tested; Linux/macOS are expected to build but are not the recorded host for this milestone
+- Native platforms: see `docs/release/v1.0-supported-platforms.md`. Release-profile archives are built by `.github/workflows/release-candidate.yml`.
 
 ## Studio
 

@@ -1,4 +1,4 @@
-export const VERSION = "0.1.0-alpha";
+export const VERSION = "1.0.0-rc.1";
 export const PROTOCOL_VERSION = "1.0";
 export const SOURCE_FRAMEWORK = "goshikq-typescript";
 export const WORKER_CAPABILITIES = [

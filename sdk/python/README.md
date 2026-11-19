@@ -4,7 +4,7 @@ Python SDK for [Goshikq](https://github.com/goshikavs/goshikq-agent-framework), 
 model-independent AI agent framework. The SDK declares agents, goals, and tool contracts; the
 Goshikq Rust runtime owns execution, policy enforcement, persistence, and verification.
 
-Status: `0.1.0a1` (alpha). APIs may change before `0.1.0`.
+Status: `1.0.0rc1` (release candidate, not on PyPI). APIs may still change before a stable v1.0.0 tag.
 
 ## Install
 

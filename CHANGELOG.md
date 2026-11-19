@@ -1,16 +1,26 @@
 # Changelog
 
-## Unreleased — v1.0 hardening (not a v1.0.0 tag)
+## Unreleased — v1.0.0-rc.1 (not tagged, not published)
 
-Engineering toward `v1.0.0-rc.1` on `release/v1.0-hardening`. Packages, GitHub Releases, and the stable tag are still unpublished.
+In-tree versions: Cargo/npm `1.0.0-rc.1`, Python `goshikq-ai` `1.0.0rc1`. No GitHub Release, git tag, PyPI, npm, or crates.io publish until owner approval.
 
 ### Added
 
+- `.github/workflows/release-candidate.yml`: native `--release` archives, packaged-binary smoke, SHA256SUMS, SPDX SBOM, isolated SDK packs
+- `scripts/package_release.py`, `scripts/smoke_packaged_runtime.py`, version/sqlx graph gates
 - Native GitHub Actions matrix: Linux x64/ARM64, Windows x64, macOS Intel/ARM64; Windows ARM64 experimental
 - rustfmt + clippy job; Python 3.11–3.13 unit matrix; linux/arm64 Docker smoke job
 - Sandbox examples: bank-account-update, travel-booking, enterprise-access
 - Adversarial verification, mixed Python/TypeScript runtime, and migration inventory tests
-- `docs/release/v1.0-*` execution, audit, gates, and platform reports
+- `docs/release/v1.0-*` execution, audit, gates, platform, artifact, and owner-publish reports
+
+### Changed
+
+- Workspace sqlx 0.8 → 0.9 (PostgreSQL features only; `rsa` / Marvin dropped from `Cargo.lock`)
+- bun overrides: DOMPurify 3.4.17 (GHSA-c6gr-qvv4-5v3f), PostCSS 8.5.32, Hono 4.13.16, `@hono/node-server` 2.1.6
+- `bun audit` is a required CI gate
+- cargo-audit ignore retained only for unused sqlx-sqlite `libsqlite3-sys` (RUSTSEC-2026-0459), with `cargo tree` proof
+
 
 ## Unreleased — GitHub baseline / CI (not a v1.0 tag)
 

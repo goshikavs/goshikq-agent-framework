@@ -6,7 +6,7 @@ Goshikq is an open-source **AI agent framework** with a **Rust runtime** for **d
 
 Source: [goshikavs/goshikq-agent-framework](https://github.com/goshikavs/goshikq-agent-framework). Docs (GitHub Pages, after the docs workflow runs on `main`): [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/).
 
-**Status:** `0.1.0-alpha` (**v0.9.1** in tree). APIs will change. This is **not** a published v1.0: packages and GitHub Releases are unpublished. Not SOC 2 / HIPAA / PCI certified.
+**Status:** `1.0.0-rc.1` in tree (**not published**). This is **not** a stable v1.0: no GitHub Release, PyPI, npm, or crates.io package exists until the owner approves publication. Not SOC 2 / HIPAA / PCI certified.
 
 - Languages: Rust (runtime), Python 3.11+ (SDK), TypeScript (Studio + native SDK worker)
 - Runtime: `goshikq-server` on `http://127.0.0.1:7400`
@@ -25,7 +25,7 @@ Existing frameworks already provide orchestration, retries, tracing, and checkpo
 4. A framework-neutral execution event protocol
 5. Studio that correlates intent, execution, snapshots, and verification evidence
 
-Goshikq does **not** claim to invent tracing, durable workflows, or verification. It does **not** publish benchmark numbers in this alpha.
+Goshikq does **not** claim to invent tracing, durable workflows, or verification. It does **not** publish competitive benchmark claims. Measured numbers live in `docs/release/v1.0-performance-report.md`.
 
 ## Core features
 

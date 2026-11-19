@@ -43,6 +43,10 @@ jobs:
         run: cargo test --workspace --all-targets
       - name: Evidence baseline bench (small, deterministic)
         run: cargo run -p goshikq-bench -- --sizes 10,100 --trials 3 --seed 42 --out /tmp/evidence-bench.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidence-bench-json
+          path: /tmp/evidence-bench.json
       - name: Export OpenAPI
         run: cargo run -q -p goshikq-server -- --export-openapi docs/api/openapi.json
 
@@ -283,6 +287,16 @@ jobs:
       - name: Security, crash, evidence, multi-agent, workflow, OTEL, retention
         run: |
           python -m pytest tests/security tests/isolation tests/crash tests/evidence tests/multi_agent tests/workflows tests/otel tests/reliability tests/protocol tests/e2e tests/postgres -q
+      - name: HTTP health + echo-workflow bench (framework overhead)
+        run: |
+          python tests/perf/bench_v09.py
+          mkdir -p benchmarks/v1.0
+          cp benchmarks/v0.9/results.json benchmarks/v1.0/http-overhead.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: http-overhead-bench
+          path: benchmarks/v0.9/results.json
+          if-no-files-found: warn
 
   packaging:
     runs-on: ubuntu-24.04
@@ -403,6 +417,10 @@ jobs:
         run: |
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar -xz
           ./gitleaks detect --no-git --source . --verbose
+      - name: RC version metadata
+        run: python scripts/assert_rc_versions.py
+      - name: Unused sqlx backends are not reachable
+        run: python scripts/assert_unused_sqlx_backends.py
       - name: cargo-audit
         run: |
           cargo install cargo-audit --locked
@@ -413,7 +431,6 @@ jobs:
           python -m pip install -e sdk/python
           pip-audit
       - name: bun audit (Studio + TS SDK)
-        continue-on-error: true
         run: |
           bun install --frozen-lockfile
           bun audit

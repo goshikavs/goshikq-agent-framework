@@ -6,7 +6,7 @@ import { SITE } from "../lib/site";
   <section class="hero wrap prose">
     <p class="kicker">Install</p>
     <h1>Install from source</h1>
-    <p class="lede"><strong>Packaged releases are not yet published.</strong> There is no PyPI, npm, or crates.io package and no GitHub Release archive. <strong>v1.0.0 is not tagged.</strong> Use git or a development snapshot ZIP of <code>main</code>.</p>
+    <p class="lede"><strong>Packaged releases are not yet published.</strong> There is no PyPI, npm, or crates.io package and no GitHub Release archive. Tree version is <code>{SITE.version}</code> (Python <code>{SITE.pythonVersion}</code>, TypeScript <code>{SITE.tsVersion}</code>). <strong>v1.0.0 is not tagged.</strong> A GitHub prerelease for <code>v1.0.0-rc.1</code> requires owner approval. Use git or a development snapshot ZIP of <code>main</code>.</p>
     <h2>Source</h2>
     <pre class="install"><code>git clone {SITE.githubGit}</code></pre>
     <p><a href={SITE.github}>Open the repository</a></p>
@@ -29,6 +29,7 @@ bun --filter @goshikq/sdk test</code></pre>
     <pre class="install"><code>docker compose up -d postgres</code></pre>
     <p>Without Docker: <code>DATABASE_URL=embedded</code>.</p>
     <h2>GitHub Releases</h2>
-    <p>Packaged releases are not yet published. Install from source.</p>
+    <p>Packaged releases are not yet published. There is no <code>releases/download</code> URL. Native release-profile archives are staged as GitHub Actions artifacts on branch <code>release/v1.0-hardening</code> after the release-candidate workflow runs. Those artifacts expire and are not linked as download buttons here until the owner publishes a GitHub Release.</p>
+    <p>See <code>docs/release/v1.0-artifact-manifest.md</code> in the repository for SHA256 values after that workflow completes.</p>
   </section>
 </Marketing>

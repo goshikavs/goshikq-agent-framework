@@ -1,14 +1,13 @@
 [advisories]
 ignore = [
-    # Marvin timing side-channel in RSA PKCS#1 v1.5 *decryption*.
-    # Pulled by sqlx 0.8's unused MySQL backend (`sqlx-mysql`) which remains
-    # in Cargo.lock even with default-features disabled. Goshikq talks only to
-    # PostgreSQL and verifies RS256 JWTs (signature verify, not RSA decrypt).
-    # No patched `rsa` 0.9 release exists. Revisit when sqlx 0.8 is gone.
-    "RUSTSEC-2023-0071",
-    # C SQLite CVE-2026-119375 in `libsqlite3-sys` 0.30.1 via unused `sqlx-sqlite`.
-    # sqlx 0.8 records optional MySQL/SQLite backends in Cargo.lock even with
-    # default-features disabled. Goshikq talks only to PostgreSQL. sqlx 0.8 has
-    # no patched sqlite driver; do not compile sqlite into the runtime.
+    # C SQLite CVE-2026-119375 in `libsqlite3-sys` 0.30.1.
+    # sqlx still records optional `sqlx-sqlite` / `sqlx-mysql` crates in Cargo.lock
+    # even when those features are disabled. `cargo tree -p goshikq-server -i libsqlite3-sys`
+    # prints nothing; CI `scripts/assert_unused_sqlx_backends.py` walks the resolve graph
+    # from goshikq-server/cli/storage/runtime and fails if sqlite/mysql become reachable.
+    # Goshikq talks only to PostgreSQL. Revisit when sqlx stops listing unused backends
+    # in the lockfile. Do not compile the sqlite feature into the runtime.
     "RUSTSEC-2026-0459",
 ]
+# Unmaintained crates (chrono, paste, pin-utils) stay warnings. See
+# docs/release/v1.0-security-review.md for the upgrade plan. Do not ignore them.

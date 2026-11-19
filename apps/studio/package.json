@@ -1,6 +1,6 @@
 {
   "name": "@goshikq/studio",
-  "version": "0.1.0-alpha",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Goshikq Studio — execution monitoring, debugging, and verification",
   "scripts": {

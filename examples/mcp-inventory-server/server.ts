@@ -49,7 +49,7 @@ function handle(msg: JsonRpc): JsonRpc | null {
       result: {
         protocolVersion: supported.includes(requested) ? requested : "2024-11-05",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "goshikq-mcp-inventory", version: "0.1.0-alpha" },
+        serverInfo: { name: "goshikq-mcp-inventory", version: "1.0.0-rc.1" },
       },
     };
   }
