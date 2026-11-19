@@ -4,4 +4,4 @@ Report vulnerabilities privately to the repository owner (GitHub: goshikavs). Do
 
 This project is `0.1.0-alpha`. Known residual risks are listed in `docs/security/threat-model.md`. Prompt injection is not solved. `GOSHIKQ_AUTH_MODE=none` is local development only.
 
-`cargo audit` ignores `RUSTSEC-2023-0071` (`rsa` 0.9, Marvin) because it is pulled by unused `sqlx-mysql` and Goshikq does not RSA-decrypt untrusted ciphertexts. See `.cargo/audit.toml`.
+`cargo audit` ignores `RUSTSEC-2023-0071` (`rsa` 0.9, Marvin) and `RUSTSEC-2026-0459` (`libsqlite3-sys` / C SQLite) because both are pulled by unused sqlx 0.8 MySQL/SQLite backends in `Cargo.lock`. Goshikq talks only to PostgreSQL and does not RSA-decrypt untrusted ciphertexts. See `.cargo/audit.toml`.

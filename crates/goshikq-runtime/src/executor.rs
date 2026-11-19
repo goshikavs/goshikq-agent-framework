@@ -2841,12 +2841,11 @@ impl RunExecutor {
         phase: &str,
     ) -> Value {
         crash_at(CrashBarrier::DuringVerify, self.run_id);
-        let Some(snapshot) = self.last_snapshot.clone().or({
-            match self.take_snapshot("verify_action").await {
-                Ok(s) => s,
-                Err(_) => None,
-            }
-        }) else {
+        let Some(snapshot) = self.last_snapshot.clone().or(self
+            .take_snapshot("verify_action")
+            .await
+            .unwrap_or_default())
+        else {
             return json!({"status": "INCONCLUSIVE", "reason": "no state snapshot"});
         };
         // Always verify against a fresh read when the action just executed.

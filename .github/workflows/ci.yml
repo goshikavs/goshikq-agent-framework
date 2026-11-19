@@ -4,6 +4,7 @@ on:
   push:
     branches: [main, release/v1.0-hardening]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,7 +18,7 @@ concurrency:
 
 jobs:
   rust-lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -32,7 +33,7 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D clippy::correctness -D clippy::suspicious
 
   rust:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -57,7 +58,7 @@ jobs:
       matrix:
         include:
           - name: linux-amd64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             experimental: false
           - name: linux-arm64
             os: ubuntu-24.04-arm
@@ -86,6 +87,21 @@ jobs:
         run: |
           cargo test --workspace --lib
           cargo build -p goshikq-server
+      - name: Olson UTC for sqlx (Theseus Unix uses system zoneinfo)
+        if: runner.os != 'Windows'
+        run: |
+          python3 - <<'PY'
+          import os, struct
+          from pathlib import Path
+          def section():
+              return b"TZif2" + b"\x00"*15 + struct.pack(">6I", 0, 0, 0, 0, 1, 4) + struct.pack(">iBB", 0, 0, 0) + b"UTC\x00"
+          Path(os.environ.get("RUNNER_TEMP", "/tmp"), "goshikq-UTC").write_bytes(section() + section() + b"\nUTC0\n")
+          PY
+          UTC="${RUNNER_TEMP:-/tmp}/goshikq-UTC"
+          sudo mkdir -p /usr/share/zoneinfo/Etc || true
+          sudo cp "$UTC" /usr/share/zoneinfo/UTC || true
+          sudo cp "$UTC" /usr/share/zoneinfo/Etc/UTC || true
+          ls -la /usr/share/zoneinfo/UTC /usr/share/zoneinfo/GMT 2>/dev/null || true
       - name: Embedded-runtime smoke (hello-agent)
         env:
           DATABASE_URL: embedded
@@ -95,16 +111,23 @@ jobs:
         run: |
           BIN=target/debug/goshikq-server
           if [ -f target/debug/goshikq-server.exe ]; then BIN=target/debug/goshikq-server.exe; fi
-          "$BIN" &
+          LOG="${RUNNER_TEMP:-/tmp}/goshikq-server.log"
+          "$BIN" > "$LOG" 2>&1 &
           echo $! > /tmp/goshikq-server.pid
           python -m pip install -e sdk/python httpx pytest
           ok=0
           for i in $(seq 1 120); do
             if curl -fsS http://127.0.0.1:7400/ready; then ok=1; break; fi
+            if ! kill -0 "$(cat /tmp/goshikq-server.pid)" 2>/dev/null; then
+              echo "goshikq-server exited before /ready on ${{ matrix.name }}" >&2
+              break
+            fi
             sleep 2
           done
           if [ "$ok" != "1" ]; then
             echo "goshikq-server did not become ready on ${{ matrix.name }}" >&2
+            echo "----- goshikq-server log -----" >&2
+            cat "$LOG" >&2 || true
             exit 1
           fi
           python -m pytest examples/hello-agent sdk/python/tests -q
@@ -112,7 +135,7 @@ jobs:
 
 
   python-versions:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -129,7 +152,7 @@ jobs:
           pytest
 
   python-sdk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -150,7 +173,7 @@ jobs:
           done
 
   typescript:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -164,7 +187,7 @@ jobs:
           (cd sdk/typescript && bun pm pack)
 
   studio:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -177,7 +200,7 @@ jobs:
           bun --filter @goshikq/studio build
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -190,7 +213,7 @@ jobs:
           bun run build
 
   website:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -213,7 +236,7 @@ jobs:
           bun run test:e2e
 
   integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -258,7 +281,7 @@ jobs:
           python -m pytest tests/security tests/isolation tests/crash tests/evidence tests/multi_agent tests/workflows tests/otel tests/reliability tests/protocol tests/e2e tests/postgres -q
 
   packaging:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -301,7 +324,7 @@ jobs:
         run: python -m pytest tests/packaging -q
 
   playwright:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -342,13 +365,13 @@ jobs:
           (cd apps/studio && bunx playwright install --with-deps chromium && bun run test:e2e)
 
   docker-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Compose smoke
         run: bash scripts/docker-smoke.sh
       - name: Record
-        run: echo "docker-smoke ran on GitHub-hosted ubuntu-latest (linux/amd64). Local Windows authoring host has no Docker CLI and must not claim this job."
+        run: echo "docker-smoke ran on GitHub-hosted ubuntu-24.04 (linux/amd64). Local Windows authoring host has no Docker CLI and must not claim this job."
 
   docker-smoke-arm:
     runs-on: ubuntu-24.04-arm
@@ -360,7 +383,7 @@ jobs:
         run: echo "docker-smoke ran on GitHub-hosted ubuntu-24.04-arm (linux/arm64 native, not cross-compiled)."
 
   security-scans:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
