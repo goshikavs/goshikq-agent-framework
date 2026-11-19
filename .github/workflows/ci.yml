@@ -50,6 +50,10 @@ jobs:
     name: native-${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
+    env:
+      # Theseus downloads PostgreSQL binaries via api.github.com. Unauthenticated
+      # requests from GitHub-hosted runners are often 403 rate-limited.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     defaults:
       run:
         shell: bash
