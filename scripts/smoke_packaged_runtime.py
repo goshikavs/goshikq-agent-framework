@@ -59,9 +59,28 @@ def port_listening(port: int) -> bool:
             return False
 
 
+def kill_windows_listeners(port: int) -> None:
+    """Theseus may leave postgres.exe listening after goshikq-server exits."""
+    netstat = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, check=False)
+    pids: set[str] = set()
+    token = f":{port}"
+    for line in netstat.stdout.splitlines():
+        if token not in line or "LISTENING" not in line.upper():
+            continue
+        pid = line.split()[-1]
+        if pid.isdigit() and pid != "0":
+            pids.add(pid)
+    for pid in pids:
+        subprocess.run(["taskkill", "/PID", pid, "/F"], capture_output=True, text=True, check=False)
+
+
 def wait_ports_free(ports: list[int], seconds: float = 40) -> None:
     deadline = time.time() + seconds
     while time.time() < deadline:
+        if os.name == "nt":
+            for port in ports:
+                if port_listening(port):
+                    kill_windows_listeners(port)
         if not any(port_listening(p) for p in ports):
             return
         time.sleep(0.5)
