@@ -144,7 +144,17 @@ jobs:
           sudo cp "$UTC" /usr/share/zoneinfo/Etc/UTC || true
       - name: Smoke packaged archive
         run: |
-          ARCHIVE=$(ls dist/goshikq-${CANDIDATE}-${{ matrix.name }}.tar.gz dist/goshikq-${CANDIDATE}-${{ matrix.name }}.zip 2>/dev/null | head -n1)
+          set -euo pipefail
+          if [ -f "dist/goshikq-${CANDIDATE}-${{ matrix.name }}.tar.gz" ]; then
+            ARCHIVE="dist/goshikq-${CANDIDATE}-${{ matrix.name }}.tar.gz"
+          elif [ -f "dist/goshikq-${CANDIDATE}-${{ matrix.name }}.zip" ]; then
+            ARCHIVE="dist/goshikq-${CANDIDATE}-${{ matrix.name }}.zip"
+          else
+            echo "release archive missing in dist/" >&2
+            ls -la dist || true
+            exit 1
+          fi
+          echo "smoking $ARCHIVE"
           python scripts/smoke_packaged_runtime.py --archive "$ARCHIVE"
       - name: Upload platform archive
         uses: actions/upload-artifact@v4
@@ -190,6 +200,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
+      - name: Create SBOM output directory
+        run: mkdir -p dist/sbom
       - uses: anchore/sbom-action@v0
         with:
           path: .
