@@ -1,10 +1,10 @@
 # Implementation status
 
-Honest inventory as of 2026-10-30 UTC (**v0.9.1** release-gate closure in tree). Features are **available**, **experimental**, or **planned**. Nothing here is marked available unless it runs against persisted data or real code paths.
+Current public status: GitHub **prerelease** [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2). This is **not** stable v1.0.0. Features are **available**, **experimental**, or **planned**. Nothing here is marked available unless it runs against persisted data or real code paths.
 
-Latest milestone: **v0.9.1** (`docs/milestones/v0.9.1-report.md`). v1.0 is **not** ready (`docs/release/v1.0-readiness.md`). Temporal is deferred. No commit/push/publish this cycle.
+See `docs/release/v1.0-readiness-audit.md` and `docs/release/v1.0-release-gates.md`. Historical in-tree milestone: **v0.9.1** (`docs/milestones/v0.9.1-report.md`). Temporal remains deferred.
 
-## Commands re-run on this host (v0.9.1)
+## Commands re-run on this host (historical v0.9.1 inventory)
 
 ```text
 cargo test -p goshikq-server --bin goshikq-server                            # 11 passed
@@ -176,7 +176,7 @@ D does not detect hidden edges (recall below 1). B covers those node ids by rech
 - CLI: `doctor`, `init --template python|typescript`, `run`, `studio`, `runs list|inspect`, `verify`, `agents list`, `workflows validate|publish|run`
 - Executable workflows: versioned schema, validation, Rust pinned-version execution, Studio React Flow editor, node-level run status
 - Documentation site: VitePress (`docs/site`)
-- Local SDK packages: Python wheel/sdist `0.1.0a1`, TypeScript tarball `0.1.0-alpha` (not published)
+- Local SDK packages: Python wheel/sdist `1.0.0rc2`, TypeScript tarball `1.0.0-rc.2` (not published to PyPI/npm; public GitHub native archives are `v1.0.0-rc.2`)
 - OpenAPI at `GET /api/v1/openapi.json`
 - Event batch ingestion `POST /api/v1/events/batch` (idempotent)
 - OTLP/HTTP protobuf and JSON trace ingest `POST /v1/traces` (mapping `otel-genai-v1`; spans are not verified outcomes)

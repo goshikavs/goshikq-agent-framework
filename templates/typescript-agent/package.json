@@ -1,7 +1,7 @@
 {
   "name": "goshikq-typescript-agent",
   "private": true,
-  "version": "0.1.0-alpha",
+  "version": "1.0.0-rc.2",
   "type": "module",
   "scripts": {
     "start": "bun run main.ts",

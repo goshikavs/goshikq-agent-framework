@@ -1,5 +1,46 @@
 # Changelog
 
+## v1.0.0-rc.2 — GitHub prerelease (2026-11-20)
+
+GitHub prerelease: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2  
+Tag target: `07b0abd56bc84fc78532bc2ce8de2c14de9cf29b`. Not stable v1.0. Not on PyPI, npm, or crates.io.  
+This candidate **supersedes** [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) because rc.1 shipped `jsonwebtoken` 9.3.1 (GHSA-h395-gr6q-cpjc / CVE-2026-25537). The rc.1 tag and archives remain published for history.
+
+### Security
+
+- Upgraded `jsonwebtoken` 9.3.1 → **12.0.0** (`rust_crypto` + `use_pem`) for [GHSA-h395-gr6q-cpjc](https://github.com/advisories/GHSA-h395-gr6q-cpjc) / CVE-2026-25537. 12.0.0 also updates `rsa` to 0.10.0 (Marvin) and `crypto-bigint` to 0.7.11.
+- OIDC validation now requires typed `exp`, `iss`, `aud`, `sub`; keeps `validate_nbf` when `nbf` is present
+- CI `scripts/assert_jsonwebtoken_patched.py` fails if `Cargo.lock` has jsonwebtoken older than 10.3.0
+- Adversarial OIDC unit and JWKS integration tests for malformed claims, alg confusion, unknown kid, and tenant isolation
+
+### Changed
+
+- Public download links now point at `v1.0.0-rc.2`. `v1.0.0-rc.1` remains published and is superseded.
+
+
+## v1.0.0-rc.1 — GitHub prerelease (2026-11-19)
+
+GitHub prerelease: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1  
+Tag target: `1f4d35dd6b73801ede2ec1e64ad906645c4d7a60`. Not stable v1.0. Not on PyPI, npm, or crates.io.
+
+### Added
+
+- `.github/workflows/release-candidate.yml`: native `--release` archives, packaged-binary smoke, SHA256SUMS, SPDX SBOM, isolated SDK packs
+- `scripts/package_release.py`, `scripts/smoke_packaged_runtime.py`, version/sqlx graph gates
+- Native GitHub Actions matrix: Linux x64/ARM64, Windows x64, macOS Intel/ARM64; Windows ARM64 experimental
+- rustfmt + clippy job; Python 3.11–3.13 unit matrix; linux/arm64 Docker smoke job
+- Sandbox examples: bank-account-update, travel-booking, enterprise-access
+- Adversarial verification, mixed Python/TypeScript runtime, and migration inventory tests
+- `docs/release/v1.0-*` execution, audit, gates, platform, artifact, and owner-publish reports
+
+### Changed
+
+- Workspace sqlx 0.8 → 0.9 (PostgreSQL features only; `rsa` / Marvin dropped from `Cargo.lock`)
+- bun overrides: DOMPurify 3.4.17 (GHSA-c6gr-qvv4-5v3f), PostCSS 8.5.32, Hono 4.13.16, `@hono/node-server` 2.1.6
+- `bun audit` is a required CI gate
+- cargo-audit ignore retained only for unused sqlx-sqlite `libsqlite3-sys` (RUSTSEC-2026-0459), with `cargo tree` proof
+
+
 ## Unreleased — GitHub baseline / CI (not a v1.0 tag)
 
 Private repository connected. Required GitHub Actions jobs are green on `main` at `e7d5b70`. Packages and public releases are still not published.

@@ -4,14 +4,15 @@ Goshikq is an open-source **AI agent framework** with a **Rust runtime** for **d
 
 **Build Agents. Verify Outcomes.**
 
-Source: [goshikavs/goshikq-agent-framework](https://github.com/goshikavs/goshikq-agent-framework). Docs (GitHub Pages, after the docs workflow runs on `main`): [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/).
+Source: [goshikavs/goshikq-agent-framework](https://github.com/goshikavs/goshikq-agent-framework). Website (GitHub Pages, after the docs workflow runs on `main`): [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/). Native archives: GitHub prerelease [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2).
 
-**Status:** `0.1.0-alpha` (**v0.9.1** in tree). APIs will change. This is **not** a published v1.0: packages and GitHub Releases are unpublished. Not SOC 2 / HIPAA / PCI certified.
+**Status:** GitHub **prerelease** [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2) (binaries from `07b0abd56bc84fc78532bc2ce8de2c14de9cf29b`). This is **not** stable v1.0. There is **no** PyPI, npm, or crates.io package. Windows ARM64 is experimental. Not SOC 2 / HIPAA / PCI certified. [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) is **superseded** because it shipped `jsonwebtoken` 9.3.1 ([GHSA-h395-gr6q-cpjc](https://github.com/advisories/GHSA-h395-gr6q-cpjc) / CVE-2026-25537). Use rc.2 for new installs. The rc.1 tag and archives remain published for history.
 
 - Languages: Rust (runtime), Python 3.11+ (SDK), TypeScript (Studio + native SDK worker)
 - Runtime: `goshikq-server` on `http://127.0.0.1:7400`
 - Studio: Next.js on `http://127.0.0.1:3000`
 - Docs: [`docs/`](docs/) · Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Status: [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md)
+- Public website (not deployed until owner approval): [`apps/website`](apps/website) · `bun run website:build`
 - Maintainer: [goshikavs](https://github.com/goshikavs)
 
 ## Why Goshikq?
@@ -24,7 +25,7 @@ Existing frameworks already provide orchestration, retries, tracing, and checkpo
 4. A framework-neutral execution event protocol
 5. Studio that correlates intent, execution, snapshots, and verification evidence
 
-Goshikq does **not** claim to invent tracing, durable workflows, or verification. It does **not** publish benchmark numbers in this alpha.
+Goshikq does **not** claim to invent tracing, durable workflows, or verification. It does **not** publish competitive benchmark claims. Measured numbers live in `docs/release/v1.0-performance-report.md`.
 
 ## Core features
 

@@ -81,6 +81,10 @@ impl OidcValidator {
         let mut validation = Validation::new(alg);
         validation.validate_exp = true;
         validation.validate_nbf = true;
+        validation.validate_aud = true;
+        // Require typed registered claims so a string `exp`/`nbf` cannot skip checks
+        // (GHSA-h395-gr6q-cpjc / CVE-2026-25537, patched in jsonwebtoken 10.3.0).
+        validation.set_required_spec_claims(&["exp", "iss", "aud", "sub"]);
         validation.set_issuer(&[&self.settings.issuer]);
         validation.set_audience(&[&self.settings.audience]);
         let data = decode::<OidcClaims>(token, &key, &validation).map_err(|e| {
@@ -90,10 +94,11 @@ impl OidcValidator {
         if data.claims.sub.trim().is_empty() {
             return Err(ApiError::unauthorized("token is missing sub"));
         }
-        if !data.claims.aud.contains(&self.settings.audience)
-            && !matches!(data.claims.aud, Aud::Many(ref v) if v.is_empty())
-        {
-            // jsonwebtoken already checks aud; keep a belt-and-suspenders message.
+        if data.claims.exp.is_none() {
+            return Err(ApiError::unauthorized("token is missing exp"));
+        }
+        if !data.claims.aud.contains(&self.settings.audience) {
+            return Err(ApiError::unauthorized("token audience rejected"));
         }
         Ok(data.claims)
     }
@@ -108,7 +113,9 @@ impl OidcValidator {
         ) {
             if self.settings.allow_test_hmac {
                 if let Some(secret) = &self.settings.hmac_secret {
-                    return Ok((DecodingKey::from_secret(secret.as_bytes()), header.alg));
+                    let key = DecodingKey::from_secret(secret.as_bytes())
+                        .map_err(|_| ApiError::unauthorized("invalid HMAC secret"))?;
+                    return Ok((key, header.alg));
                 }
             }
             return Err(ApiError::unauthorized("HMAC tokens are not accepted"));
@@ -198,19 +205,34 @@ mod tests {
     }
 
     fn mint(iss: &str, aud: &str, exp_delta: i64) -> String {
-        let claims = json!({
+        mint_claims(json!({
             "sub": "alice",
             "iss": iss,
             "aud": aud,
             "exp": chrono::Utc::now().timestamp() + exp_delta,
             "nbf": chrono::Utc::now().timestamp() - 5,
-        });
+        }))
+    }
+
+    fn hmac_key(secret: &[u8]) -> EncodingKey {
+        EncodingKey::from_secret(secret).expect("hmac test secret")
+    }
+
+    fn mint_claims(claims: serde_json::Value) -> String {
         encode(
             &Header::new(Algorithm::HS256),
             &claims,
-            &EncodingKey::from_secret(b"test-hmac-secret-at-least-32-bytes!!"),
+            &hmac_key(b"test-hmac-secret-at-least-32-bytes!!"),
         )
         .unwrap()
+    }
+
+    async fn assert_rejected(token: &str) {
+        let v = OidcValidator::new(settings());
+        assert!(
+            v.validate(token).await.is_err(),
+            "expected rejection for {token}"
+        );
     }
 
     #[tokio::test]
@@ -224,7 +246,7 @@ mod tests {
         let token = encode(
             &Header::new(Algorithm::HS256),
             &claims,
-            &EncodingKey::from_secret(b"test-hmac-secret-at-least-32-bytes!!"),
+            &hmac_key(b"test-hmac-secret-at-least-32-bytes!!"),
         )
         .unwrap();
         let v = OidcValidator::new(settings());
@@ -269,5 +291,101 @@ mod tests {
             .validate(&mint("http://127.0.0.1/idp", "goshikq", 60))
             .await
             .is_err());
+    }
+
+    #[tokio::test]
+    async fn rejects_future_nbf() {
+        let now = chrono::Utc::now().timestamp();
+        assert_rejected(&mint_claims(json!({
+            "sub": "alice",
+            "iss": "http://127.0.0.1/idp",
+            "aud": "goshikq",
+            "exp": now + 3600,
+            "nbf": now + 3600,
+        })))
+        .await;
+    }
+
+    #[tokio::test]
+    async fn rejects_string_exp_type_confusion() {
+        let now = chrono::Utc::now().timestamp();
+        assert_rejected(&mint_claims(json!({
+            "sub": "alice",
+            "iss": "http://127.0.0.1/idp",
+            "aud": "goshikq",
+            "exp": "never",
+            "nbf": now - 5,
+        })))
+        .await;
+    }
+
+    #[tokio::test]
+    async fn rejects_string_nbf_type_confusion() {
+        let now = chrono::Utc::now().timestamp();
+        assert_rejected(&mint_claims(json!({
+            "sub": "alice",
+            "iss": "http://127.0.0.1/idp",
+            "aud": "goshikq",
+            "exp": now + 3600,
+            "nbf": "99999999999",
+        })))
+        .await;
+    }
+
+    #[tokio::test]
+    async fn rejects_missing_exp() {
+        let now = chrono::Utc::now().timestamp();
+        assert_rejected(&mint_claims(json!({
+            "sub": "alice",
+            "iss": "http://127.0.0.1/idp",
+            "aud": "goshikq",
+            "nbf": now - 5,
+        })))
+        .await;
+    }
+
+    #[tokio::test]
+    async fn rejects_missing_sub() {
+        let now = chrono::Utc::now().timestamp();
+        assert_rejected(&mint_claims(json!({
+            "iss": "http://127.0.0.1/idp",
+            "aud": "goshikq",
+            "exp": now + 60,
+            "nbf": now - 5,
+        })))
+        .await;
+    }
+
+    #[tokio::test]
+    async fn rejects_malformed_jwt() {
+        assert_rejected("not-a-jwt").await;
+        assert_rejected("a.b").await;
+        assert_rejected("").await;
+    }
+
+    #[tokio::test]
+    async fn rejects_wrong_hmac_secret() {
+        let now = chrono::Utc::now().timestamp();
+        let token = encode(
+            &Header::new(Algorithm::HS256),
+            &json!({
+                "sub": "alice",
+                "iss": "http://127.0.0.1/idp",
+                "aud": "goshikq",
+                "exp": now + 60,
+                "nbf": now - 5,
+            }),
+            &hmac_key(b"some-other-secret-that-is-32-bytes!"),
+        )
+        .unwrap();
+        assert_rejected(&token).await;
+    }
+
+    #[tokio::test]
+    async fn rejects_alg_none_header() {
+        assert_rejected(
+            "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhbGljZSIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjEvaWRwIiwiYXVkIjoiZ29zaGlrcSIsImV4cCI6OTk5OTk5OTk5OX0.",
+        )
+        .await;
     }
 }

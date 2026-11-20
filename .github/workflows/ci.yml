@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, release/v1.0-hardening]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,8 +17,23 @@ concurrency:
 # Optional future secrets (not wired): OIDC_ISSUER, OIDC_JWKS_URL for a hosted IdP job.
 
 jobs:
+  rust-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.98.0
+          components: rustfmt, clippy
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+      - name: clippy
+        # Style/pedantic warnings exist in tree; do not rewrite the runtime to silence them.
+        # correctness + suspicious remain deny-level release gates.
+        run: cargo clippy --workspace --all-targets -- -D clippy::correctness -D clippy::suspicious
+
   rust:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -27,11 +43,124 @@ jobs:
         run: cargo test --workspace --all-targets
       - name: Evidence baseline bench (small, deterministic)
         run: cargo run -p goshikq-bench -- --sizes 10,100 --trials 3 --seed 42 --out /tmp/evidence-bench.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidence-bench-json
+          path: /tmp/evidence-bench.json
       - name: Export OpenAPI
         run: cargo run -q -p goshikq-server -- --export-openapi docs/api/openapi.json
 
+  native-runtime:
+    name: native-${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    env:
+      # Theseus downloads PostgreSQL binaries via api.github.com. Unauthenticated
+      # requests from GitHub-hosted runners are often 403 rate-limited.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64
+            os: ubuntu-24.04
+            experimental: false
+          - name: linux-arm64
+            os: ubuntu-24.04-arm
+            experimental: false
+          - name: windows-amd64
+            os: windows-latest
+            experimental: false
+          - name: macos-arm64
+            os: macos-latest
+            experimental: false
+          - name: macos-amd64
+            os: macos-15-intel
+            experimental: false
+          - name: windows-arm64
+            os: windows-11-arm
+            experimental: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.98.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native unit tests and server build
+        run: |
+          cargo test --workspace --lib
+          cargo build -p goshikq-server
+      - name: Olson UTC for sqlx (Theseus Unix uses system zoneinfo)
+        if: runner.os != 'Windows'
+        run: |
+          python3 - <<'PY'
+          import os, struct
+          from pathlib import Path
+          def section():
+              return b"TZif2" + b"\x00"*15 + struct.pack(">6I", 0, 0, 0, 0, 1, 4) + struct.pack(">iBB", 0, 0, 0) + b"UTC\x00"
+          Path(os.environ.get("RUNNER_TEMP", "/tmp"), "goshikq-UTC").write_bytes(section() + section() + b"\nUTC0\n")
+          PY
+          UTC="${RUNNER_TEMP:-/tmp}/goshikq-UTC"
+          sudo mkdir -p /usr/share/zoneinfo/Etc || true
+          sudo cp "$UTC" /usr/share/zoneinfo/UTC || true
+          sudo cp "$UTC" /usr/share/zoneinfo/Etc/UTC || true
+          ls -la /usr/share/zoneinfo/UTC /usr/share/zoneinfo/GMT 2>/dev/null || true
+      - name: Embedded-runtime smoke (hello-agent)
+        env:
+          DATABASE_URL: embedded
+          GOSHIKQ_AUTH_MODE: none
+          GOSHIKQ_BIND: 127.0.0.1:7400
+          GOSHIKQ_RUNTIME_URL: http://127.0.0.1:7400
+        run: |
+          BIN=target/debug/goshikq-server
+          if [ -f target/debug/goshikq-server.exe ]; then BIN=target/debug/goshikq-server.exe; fi
+          LOG="${RUNNER_TEMP:-/tmp}/goshikq-server.log"
+          "$BIN" > "$LOG" 2>&1 &
+          echo $! > /tmp/goshikq-server.pid
+          python -m pip install -e sdk/python httpx pytest
+          ok=0
+          for i in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:7400/ready; then ok=1; break; fi
+            if ! kill -0 "$(cat /tmp/goshikq-server.pid)" 2>/dev/null; then
+              echo "goshikq-server exited before /ready on ${{ matrix.name }}" >&2
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ok" != "1" ]; then
+            echo "goshikq-server did not become ready on ${{ matrix.name }}" >&2
+            echo "----- goshikq-server log -----" >&2
+            cat "$LOG" >&2 || true
+            exit 1
+          fi
+          python -m pytest examples/hello-agent sdk/python/tests -q
+          python examples/hello-agent/main.py
+
+
+  python-versions:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: SDK unit tests
+        working-directory: sdk/python
+        run: |
+          python -m pip install -e ".[dev]"
+          pytest
+
   python-sdk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -47,10 +176,12 @@ jobs:
       - name: Example unit tests
         run: |
           python -m pip install -e sdk/python
-          python -m pytest examples/hello-agent examples/tool-agent examples/retail-refund -q
+          for d in examples/hello-agent examples/tool-agent examples/retail-refund examples/bank-account-update examples/travel-booking examples/enterprise-access; do
+            python -m pytest "$d" -q
+          done
 
   typescript:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -64,7 +195,7 @@ jobs:
           (cd sdk/typescript && bun pm pack)
 
   studio:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -77,7 +208,7 @@ jobs:
           bun --filter @goshikq/studio build
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -89,8 +220,49 @@ jobs:
           bun install --frozen-lockfile
           bun run build
 
+  website:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release-status and download-link claims
+        run: python3 scripts/assert_rc_versions.py
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Install website dependencies
+        working-directory: apps/website
+        run: bun install --frozen-lockfile
+      - name: Astro typecheck
+        working-directory: apps/website
+        env:
+          PUBLIC_SITE_URL: http://127.0.0.1:4321
+          ASTRO_TELEMETRY_DISABLED: "1"
+        run: bun run check
+      - name: GitHub Pages base-path build
+        working-directory: apps/website
+        env:
+          PUBLIC_SITE_URL: https://goshikavs.github.io
+          PUBLIC_BASE_PATH: /goshikq-agent-framework/
+          ASTRO_TELEMETRY_DISABLED: "1"
+        run: |
+          bun run build
+          bun scripts/assert_pages_base.mjs
+      - name: Build public website
+        working-directory: apps/website
+        env:
+          PUBLIC_SITE_URL: http://127.0.0.1:4321
+          ASTRO_TELEMETRY_DISABLED: "1"
+        run: bun run build
+      - name: Playwright
+        working-directory: apps/website
+        env:
+          PUBLIC_SITE_URL: http://127.0.0.1:4321
+        run: |
+          bunx playwright install --with-deps chromium
+          bun run test:e2e
+
   integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -132,10 +304,20 @@ jobs:
           exit 1
       - name: Security, crash, evidence, multi-agent, workflow, OTEL, retention
         run: |
-          python -m pytest tests/security tests/isolation tests/crash tests/evidence tests/multi_agent tests/workflows tests/otel tests/reliability tests/protocol -q
+          python -m pytest tests/security tests/isolation tests/crash tests/evidence tests/multi_agent tests/workflows tests/otel tests/reliability tests/protocol tests/e2e tests/postgres -q
+      - name: HTTP health + echo-workflow bench (framework overhead)
+        run: |
+          python tests/perf/bench_v09.py
+          mkdir -p benchmarks/v1.0
+          cp benchmarks/v0.9/results.json benchmarks/v1.0/http-overhead.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: http-overhead-bench
+          path: benchmarks/v0.9/results.json
+          if-no-files-found: warn
 
   packaging:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -178,7 +360,7 @@ jobs:
         run: python -m pytest tests/packaging -q
 
   playwright:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -219,16 +401,25 @@ jobs:
           (cd apps/studio && bunx playwright install --with-deps chromium && bun run test:e2e)
 
   docker-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Compose smoke
         run: bash scripts/docker-smoke.sh
       - name: Record
-        run: echo "docker-smoke ran on GitHub-hosted ubuntu-latest. Local Windows authoring host has no Docker CLI and must not claim this job."
+        run: echo "docker-smoke ran on GitHub-hosted ubuntu-24.04 (linux/amd64). Local Windows authoring host has no Docker CLI and must not claim this job."
+
+  docker-smoke-arm:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compose smoke (linux/arm64 native)
+        run: bash scripts/docker-smoke.sh
+      - name: Record
+        run: echo "docker-smoke ran on GitHub-hosted ubuntu-24.04-arm (linux/arm64 native, not cross-compiled)."
 
   security-scans:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -242,8 +433,15 @@ jobs:
           bun-version: "1.4.4"
       - name: Gitleaks (no extra credentials)
         run: |
-          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar -xz
-          ./gitleaks detect --no-git --source . --verbose
+          mkdir -p "$HOME/.local/bin"
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar -xz -C "$HOME/.local/bin" gitleaks
+          "$HOME/.local/bin/gitleaks" detect --no-git --source . --verbose
+      - name: RC version metadata
+        run: python scripts/assert_rc_versions.py
+      - name: Unused sqlx backends are not reachable
+        run: python scripts/assert_unused_sqlx_backends.py
+      - name: jsonwebtoken is patched for GHSA-h395-gr6q-cpjc
+        run: python scripts/assert_jsonwebtoken_patched.py
       - name: cargo-audit
         run: |
           cargo install cargo-audit --locked
@@ -254,7 +452,6 @@ jobs:
           python -m pip install -e sdk/python
           pip-audit
       - name: bun audit (Studio + TS SDK)
-        continue-on-error: true
         run: |
           bun install --frozen-lockfile
           bun audit

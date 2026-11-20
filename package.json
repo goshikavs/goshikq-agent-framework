@@ -1,7 +1,13 @@
 {
   "name": "goshikq-agent-framework",
   "private": true,
-  "version": "0.1.0-alpha",
+  "version": "1.0.0-rc.2",
+  "overrides": {
+    "dompurify": "3.4.17",
+    "postcss": "8.5.32",
+    "@hono/node-server": "2.1.6",
+    "hono": "4.13.16"
+  },
   "description": "Goshikq monorepo JavaScript workspace (Studio + TypeScript SDK)",
   "workspaces": [
     "apps/studio",
@@ -19,6 +25,8 @@
     "typecheck": "bun --filter @goshikq/sdk typecheck",
     "build": "bun --filter @goshikq/sdk typecheck",
     "screenshots:docs": "bun --filter @goshikq/studio screenshots:docs",
-    "screenshots:docs:seed": "bun --filter @goshikq/studio screenshots:docs:seed"
+    "screenshots:docs:seed": "bun --filter @goshikq/studio screenshots:docs:seed",
+    "website:dev": "bun --cwd apps/website run dev",
+    "website:build": "bun --cwd apps/website run build"
   }
 }

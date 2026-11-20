@@ -8,7 +8,7 @@ use sqlx::FromRow;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::{Db, DbResult};
+use crate::{audited_sql, Db, DbResult};
 
 #[derive(Debug, Default, Clone)]
 pub struct MetricsFilter {
@@ -161,11 +161,13 @@ impl Db {
                 (SELECT COUNT(*) FROM verification_results vr JOIN runs r ON r.id = vr.run_id WHERE {RUN_WHERE_ALIASED} AND vr.duration_ms IS NOT NULL)::bigint AS verification_results_with_duration
                FROM runs WHERE {RUN_WHERE}"#
         );
-        Ok(
-            bind_filter!(sqlx::query_as::<_, OverviewTotals>(&sql), project_id, f)
-                .fetch_one(&self.pool)
-                .await?,
+        Ok(bind_filter!(
+            sqlx::query_as::<_, OverviewTotals>(audited_sql(sql)),
+            project_id,
+            f
         )
+        .fetch_one(&self.pool)
+        .await?)
     }
 
     pub async fn time_series(
@@ -193,11 +195,13 @@ impl Db {
                FROM runs WHERE {RUN_WHERE}
                GROUP BY 1 ORDER BY 1"#
         );
-        Ok(
-            bind_filter!(sqlx::query_as::<_, TimeBucket>(&sql), project_id, f)
-                .fetch_all(&self.pool)
-                .await?,
+        Ok(bind_filter!(
+            sqlx::query_as::<_, TimeBucket>(audited_sql(sql)),
+            project_id,
+            f
         )
+        .fetch_all(&self.pool)
+        .await?)
     }
 
     pub async fn model_breakdown(
@@ -220,11 +224,13 @@ impl Db {
                WHERE {RUN_WHERE_ALIASED}
                GROUP BY mu.model ORDER BY calls DESC"#
         );
-        Ok(
-            bind_filter!(sqlx::query_as::<_, ModelBreakdown>(&sql), project_id, f)
-                .fetch_all(&self.pool)
-                .await?,
+        Ok(bind_filter!(
+            sqlx::query_as::<_, ModelBreakdown>(audited_sql(sql)),
+            project_id,
+            f
         )
+        .fetch_all(&self.pool)
+        .await?)
     }
 
     /// Breakdown by `agent_name`, `source_framework`, or `model`.
@@ -253,11 +259,13 @@ impl Db {
                FROM runs WHERE {RUN_WHERE}
                GROUP BY 1 ORDER BY runs DESC"#
         );
-        Ok(
-            bind_filter!(sqlx::query_as::<_, GroupBreakdown>(&sql), project_id, f)
-                .fetch_all(&self.pool)
-                .await?,
+        Ok(bind_filter!(
+            sqlx::query_as::<_, GroupBreakdown>(audited_sql(sql)),
+            project_id,
+            f
         )
+        .fetch_all(&self.pool)
+        .await?)
     }
 
     pub async fn verification_breakdown(
@@ -267,7 +275,7 @@ impl Db {
     ) -> DbResult<Vec<VerificationBreakdown>> {
         let sql = format!("SELECT verification_status, COUNT(*) AS runs FROM runs WHERE {RUN_WHERE} GROUP BY 1 ORDER BY 1");
         Ok(bind_filter!(
-            sqlx::query_as::<_, VerificationBreakdown>(&sql),
+            sqlx::query_as::<_, VerificationBreakdown>(audited_sql(sql)),
             project_id,
             f
         )

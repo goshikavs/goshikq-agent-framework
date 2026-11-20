@@ -261,6 +261,117 @@ def test_cross_tenant_denied(jwks_runtime):
         assert r.status_code in (401, 403)
 
 
+def test_rejects_future_nbf(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    token = k1.mint("alice", extra={"nbf": int(time.time()) + 3600})
+    with httpx.Client() as c:
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(token), timeout=5).status_code == 401
+
+
+def test_rejects_malformed_jwt(jwks_runtime):
+    url, _k1, _ = jwks_runtime
+    with httpx.Client() as c:
+        missing = c.get(f"{url}/api/v1/whoami", timeout=5)
+        assert missing.status_code == 401
+        assert c.get(f"{url}/api/v1/whoami", headers=auth("not-a-jwt"), timeout=5).status_code == 401
+        assert c.get(f"{url}/api/v1/whoami", headers=auth("a.b"), timeout=5).status_code == 401
+
+
+def test_rejects_missing_exp(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    header = {"alg": "RS256", "typ": "JWT", "kid": k1.kid}
+    payload = {"sub": "alice", "iss": ISSUER, "aud": AUD, "nbf": int(time.time()) - 5}
+    h = b64url(json.dumps(header, separators=(",", ":")).encode())
+    p = b64url(json.dumps(payload, separators=(",", ":")).encode())
+    sig = k1.private.sign(f"{h}.{p}".encode(), padding.PKCS1v15(), hashes.SHA256())
+    token = f"{h}.{p}.{b64url(sig)}"
+    with httpx.Client() as c:
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(token), timeout=5).status_code == 401
+
+
+def test_rejects_missing_sub(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    token = k1.mint("alice", extra={"sub": ""})
+    with httpx.Client() as c:
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(token), timeout=5).status_code == 401
+
+
+def test_rejects_string_exp_and_nbf(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    header = {"alg": "RS256", "typ": "JWT", "kid": k1.kid}
+
+    def signed(payload: dict) -> str:
+        h = b64url(json.dumps(header, separators=(",", ":")).encode())
+        p = b64url(json.dumps(payload, separators=(",", ":")).encode())
+        sig = k1.private.sign(f"{h}.{p}".encode(), padding.PKCS1v15(), hashes.SHA256())
+        return f"{h}.{p}.{b64url(sig)}"
+
+    now = int(time.time())
+    string_exp = signed(
+        {"sub": "alice", "iss": ISSUER, "aud": AUD, "exp": "never", "nbf": now - 5}
+    )
+    string_nbf = signed(
+        {"sub": "alice", "iss": ISSUER, "aud": AUD, "exp": now + 3600, "nbf": "99999999999"}
+    )
+    with httpx.Client() as c:
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(string_exp), timeout=5).status_code == 401
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(string_nbf), timeout=5).status_code == 401
+
+
+def test_rejects_unknown_kid(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    other = KeyPair("unknown-kid")
+    token = other.mint("alice")
+    with httpx.Client() as c:
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(token), timeout=5).status_code == 401
+
+
+def test_rejects_wrong_signing_key_same_kid(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    evil = KeyPair(k1.kid)
+    token = evil.mint("alice")
+    with httpx.Client() as c:
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(token), timeout=5).status_code == 401
+
+
+def test_rejects_unsupported_and_confused_algs(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    confused = k1.mint("alice", alg="HS256")
+    none_tok = k1.mint("alice", alg="none")
+    with httpx.Client() as c:
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(confused), timeout=5).status_code == 401
+        assert c.get(f"{url}/api/v1/whoami", headers=auth(none_tok), timeout=5).status_code == 401
+
+
+def test_viewer_cannot_use_foreign_project(jwks_runtime):
+    url, k1, _ = jwks_runtime
+    alice = k1.mint("alice")
+    bob_sub = f"bob-{uuid.uuid4().hex[:8]}"
+    bob = k1.mint(bob_sub)
+    with httpx.Client() as c:
+        proj = c.post(
+            f"{url}/api/v1/projects",
+            headers=auth(alice),
+            json={"name": "Other", "slug": f"other-{uuid.uuid4().hex[:8]}"},
+            timeout=5,
+        )
+        assert proj.status_code == 201, proj.text
+        other_id = proj.json()["id"]
+        members = c.post(
+            f"{url}/api/v1/members",
+            headers=auth(alice),
+            json={"subject": bob_sub, "role": "viewer"},
+            timeout=5,
+        )
+        assert members.status_code == 200, members.text
+        denied = c.get(
+            f"{url}/api/v1/runs",
+            headers={**auth(bob), "X-Goshikq-Project-Id": other_id},
+            timeout=5,
+        )
+        assert denied.status_code in (401, 403)
+
+
 def test_jwt_revocation_limitation_documented(jwks_runtime):
     """OIDC access tokens cannot be revoked by Goshikq; membership/API keys can.
 

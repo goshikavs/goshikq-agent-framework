@@ -1,6 +1,6 @@
 # Upgrade and migration
 
-Goshikq is `0.1.0-alpha`. Expect breaking API changes until a v1.0 tag exists.
+Goshikq in-tree is `1.0.0-rc.2` (Python `1.0.0rc2`). Public GitHub archives are `v1.0.0-rc.2`. `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1. Expect possible breaking API changes until a stable `v1.0.0` tag exists. That tag has not been published.
 
 ## Database
 
@@ -32,7 +32,7 @@ Install from a built wheel/tarball, not an editable checkout, when validating a 
 python -m build --wheel sdk/python
 pip install dist/goshikq_ai-*.whl
 bun pm pack   # in sdk/typescript
-bun add ./goshikq-ai-sdk-0.1.0-alpha.tgz
+bun add ./goshikq-sdk-1.0.0-rc.2.tgz
 ```
 
 Nothing is published to PyPI or npm in this milestone.
