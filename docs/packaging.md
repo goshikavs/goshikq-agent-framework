@@ -4,7 +4,7 @@ Native GitHub **prerelease** `v1.0.0-rc.1`: https://github.com/goshikavs/goshikq
 
 ## Python (`sdk/python`)
 
-- `pyproject.toml` with hatchling, version `1.0.0rc1` (PEP 440)
+- `pyproject.toml` with hatchling, version `1.0.0rc2` (PEP 440; unpublished). Public GitHub archives remain `v1.0.0-rc.1`.
 - Optional extras: `openai`, `anthropic`, `dev`
 - Isolated install (temp venv **outside** the repo): `python -m pytest tests/packaging/test_isolated_install.py`
 - Local smoke: `python -m build` then `pip install dist/*.whl` and `python -c "import goshikq_ai"`
@@ -13,11 +13,11 @@ Native GitHub **prerelease** `v1.0.0-rc.1`: https://github.com/goshikavs/goshikq
 
 - ESM package `@goshikq/sdk` shipping TypeScript sources for Bun
 - `engines.node: >=20`; Node consumers should use Bun or a TypeScript loader. A compiled `dist/` emit is not the supported path in this alpha
-- Local smoke: `bun pm pack` then `bun add ./goshikq-sdk-1.0.0-rc.1.tgz`
+- Local smoke: `bun pm pack` then `bun add ./goshikq-sdk-1.0.0-rc.2.tgz`
 
 ## Rust runtime
 
-- Workspace version `1.0.0-rc.1` (Cargo/SemVer prerelease)
+- Workspace version `1.0.0-rc.2` (Cargo/SemVer prerelease; unpublished until tagged)
 - `GET /health` reports `version`
 - Native platforms: see `docs/release/v1.0-supported-platforms.md`. Release-profile archives are built by `.github/workflows/release-candidate.yml`.
 

@@ -1,6 +1,6 @@
 # Upgrade and migration
 
-Goshikq in-tree is `1.0.0-rc.1` (Python `1.0.0rc1`). Expect possible breaking API changes until a stable `v1.0.0` tag exists. That tag has not been published.
+Goshikq in-tree is `1.0.0-rc.2` (Python `1.0.0rc2`). Public GitHub archives remain `v1.0.0-rc.1` until rc.2 is tagged. Expect possible breaking API changes until a stable `v1.0.0` tag exists. That tag has not been published.
 
 ## Database
 
@@ -32,7 +32,7 @@ Install from a built wheel/tarball, not an editable checkout, when validating a 
 python -m build --wheel sdk/python
 pip install dist/goshikq_ai-*.whl
 bun pm pack   # in sdk/typescript
-bun add ./goshikq-sdk-1.0.0-rc.1.tgz
+bun add ./goshikq-sdk-1.0.0-rc.2.tgz
 ```
 
 Nothing is published to PyPI or npm in this milestone.
