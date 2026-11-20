@@ -12,15 +12,22 @@ test.describe("Goshikq website", () => {
     expect(body).toMatch(/Goshikq/);
   });
 
-  test("quickstart and download are honest about unpublished packages", async ({ page }) => {
+  test("download identifies the GitHub prerelease and unpublished registries", async ({ page }) => {
     await page.goto("/download/");
-    await expect(page.getByText(/Packaged releases are not yet published/i).first()).toBeVisible();
+    await expect(page.getByText(/GitHub prerelease, not stable v1\.0/i).first()).toBeVisible();
+    await expect(page.getByText(/Windows ARM64 is experimental/i).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Open the GitHub prerelease/i })).toHaveAttribute(
+      "href",
+      "https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1",
+    );
     await expect(page.getByRole("link", { name: /main\.zip/i })).toHaveAttribute(
       "href",
       "https://github.com/goshikavs/goshikq-agent-framework/archive/refs/heads/main.zip",
     );
-    await expect(page.locator('a[href*="/releases/download"]')).toHaveCount(0);
+    await expect(page.locator('a[href*="/releases/download/v1.0.0/"]')).toHaveCount(0);
+    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.1/"]')).not.toHaveCount(0);
     await expect(page.locator('a[href*="pypi.org/project"]')).toHaveCount(0);
+    await expect(page.locator('a[href*="crates.io"]')).toHaveCount(0);
   });
 
   test("docs landing and search UI exist", async ({ page }) => {

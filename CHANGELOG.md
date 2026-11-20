@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased — v1.0.0-rc.1 (not tagged, not published)
+## v1.0.0-rc.1 — GitHub prerelease (2026-11-19)
 
-In-tree versions: Cargo/npm `1.0.0-rc.1`, Python `goshikq-ai` `1.0.0rc1`. No GitHub Release, git tag, PyPI, npm, or crates.io publish until owner approval.
+GitHub prerelease: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1  
+Tag target: `1f4d35dd6b73801ede2ec1e64ad906645c4d7a60`. Not stable v1.0. Not on PyPI, npm, or crates.io.
 
 ### Added
 

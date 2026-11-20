@@ -1,6 +1,6 @@
 # Packaging
 
-Nothing is published to PyPI, npm, or crates.io for `1.0.0-rc.1`. Owner approval is required before any registry or GitHub Release.
+Native GitHub **prerelease** `v1.0.0-rc.1`: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1. Nothing is published to PyPI, npm, or crates.io. Stable `v1.0.0` is a separate approval.
 
 ## Python (`sdk/python`)
 

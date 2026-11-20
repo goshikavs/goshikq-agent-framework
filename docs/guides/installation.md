@@ -1,6 +1,8 @@
 # Installation
 
-Tested on Windows x64 (MSVC) with PostgreSQL on `127.0.0.1:55432`.
+GitHub **prerelease** [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) publishes native archives. It is not stable v1.0. Python and TypeScript SDKs are not on PyPI or npm. Windows ARM64 is experimental.
+
+From-source install below was tested on Windows x64 (MSVC) with PostgreSQL on `127.0.0.1:55432`.
 
 ## Runtime
 
