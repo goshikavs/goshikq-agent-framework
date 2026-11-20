@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const PRERELEASE = "https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1";
-const ASSETS = "https://github.com/goshikavs/goshikq-agent-framework/releases/download/v1.0.0-rc.1";
+const PRERELEASE = "https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2";
+const ASSETS = "https://github.com/goshikavs/goshikq-agent-framework/releases/download/v1.0.0-rc.2";
 
 test.describe("Goshikq website", () => {
   test("homepage has Goshikq branding and no Axiom chrome", async ({ page }) => {
@@ -39,24 +39,24 @@ test.describe("Goshikq website", () => {
       "https://github.com/goshikavs/goshikq-agent-framework/archive/refs/heads/main.zip",
     );
     await expect(page.locator('a[href*="/releases/download/v1.0.0/"]')).toHaveCount(0);
-    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]')).toHaveCount(0);
-    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.1/"]')).not.toHaveCount(0);
+    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]')).not.toHaveCount(0);
+    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.1/"]')).toHaveCount(0);
     await expect(page.locator('a[href*="pypi.org/project"]')).toHaveCount(0);
     await expect(page.locator('a[href*="crates.io"]')).toHaveCount(0);
   });
 
   test("published RC download links resolve", async ({ request, page }) => {
     await page.goto("/download/");
-    const hrefs = await page.locator('a[href*="/releases/download/v1.0.0-rc.1/"]').evaluateAll((els) =>
+    const hrefs = await page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]').evaluateAll((els) =>
       els.map((el) => (el as HTMLAnchorElement).href),
     );
     expect(hrefs.length).toBeGreaterThan(5);
-    expect(hrefs.every((h) => h.includes("v1.0.0-rc.1"))).toBeTruthy();
+    expect(hrefs.every((h) => h.includes("v1.0.0-rc.2"))).toBeTruthy();
     const sums = await request.get(`${ASSETS}/SHA256SUMS`);
     expect(sums.ok()).toBeTruthy();
     const body = await sums.text();
-    expect(body).toMatch(/goshikq-1\.0\.0-rc\.1-linux-amd64\.tar\.gz/);
-    expect(body).toMatch(/goshikq-1\.0\.0-rc\.1-windows-arm64\.zip/);
+    expect(body).toMatch(/goshikq-1\.0\.0-rc\.2-linux-amd64\.tar\.gz/);
+    expect(body).toMatch(/goshikq-1\.0\.0-rc\.2-windows-arm64\.zip/);
   });
 
   test("docs landing and search UI exist", async ({ page }) => {

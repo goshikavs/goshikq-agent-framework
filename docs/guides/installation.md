@@ -1,6 +1,6 @@
 # Installation
 
-GitHub **prerelease** [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) publishes native archives. It is not stable v1.0. Python and TypeScript SDKs are not on PyPI or npm. Windows ARM64 is experimental.
+GitHub **prerelease** [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2) publishes native archives. It is not stable v1.0. `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1. Python and TypeScript SDKs are not on PyPI or npm. Windows ARM64 is experimental.
 
 From-source install below was tested on Windows x64 (MSVC) with PostgreSQL on `127.0.0.1:55432`.
 

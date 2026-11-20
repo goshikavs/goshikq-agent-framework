@@ -3,24 +3,24 @@ import Marketing from "../layouts/Marketing.astro";
 import { SITE } from "../lib/site";
 
 const archives = [
-  { platform: "Linux AMD64", file: "goshikq-1.0.0-rc.1-linux-amd64.tar.gz", sha256: "deb7cff134a2613f87b3d99542635766056e650823fbb78f7b1a46dc3aabbf65", experimental: false },
-  { platform: "Linux ARM64", file: "goshikq-1.0.0-rc.1-linux-arm64.tar.gz", sha256: "750bf54ec0deb465aa4ceda40696bcb6569ff70ea32f8cbf7f077fc0ecd102f1", experimental: false },
-  { platform: "macOS Intel", file: "goshikq-1.0.0-rc.1-macos-amd64.tar.gz", sha256: "63a09d25182a1db12d7acdf827cdff3acf4de3125ca4e8a45b212351ccee3810", experimental: false },
-  { platform: "macOS Apple Silicon", file: "goshikq-1.0.0-rc.1-macos-arm64.tar.gz", sha256: "211e1c58fab3ebe19d5921272f557ab206e235100bad3f947459e166fcec4572", experimental: false },
-  { platform: "Windows AMD64", file: "goshikq-1.0.0-rc.1-windows-amd64.zip", sha256: "5986f37f841af76edf149120e806df2d63b5febba3f68894ac16e68eb5a8e4b4", experimental: false },
-  { platform: "Windows ARM64", file: "goshikq-1.0.0-rc.1-windows-arm64.zip", sha256: "c318493c2a59117ecf11c8a6427ce334dd4346e396ce268189afbfd11659b106", experimental: true },
+  { platform: "Linux AMD64", file: "goshikq-1.0.0-rc.2-linux-amd64.tar.gz", sha256: "6919ccd70cad3febcf10555db028c4b751a14d6f44179979d8eb74c803ebdec8", experimental: false },
+  { platform: "Linux ARM64", file: "goshikq-1.0.0-rc.2-linux-arm64.tar.gz", sha256: "29a49afe0f57e2abf8d37460d2db1bfd7efafe03983f4b148fc3a08b06782b0f", experimental: false },
+  { platform: "macOS Intel", file: "goshikq-1.0.0-rc.2-macos-amd64.tar.gz", sha256: "8d7b415a45fbc746b633c5e66f5c5cd61687d61fbcb4def43316db8156b7323e", experimental: false },
+  { platform: "macOS Apple Silicon", file: "goshikq-1.0.0-rc.2-macos-arm64.tar.gz", sha256: "92cf0e3bda86d1649b7293a9fd5a0c2ef1389d38042409a1744087099553ddb5", experimental: false },
+  { platform: "Windows AMD64", file: "goshikq-1.0.0-rc.2-windows-amd64.zip", sha256: "8ee11215af1d9912c97d4928c7ef9fe960232de41685abbb4e7f3b0481414af0", experimental: false },
+  { platform: "Windows ARM64", file: "goshikq-1.0.0-rc.2-windows-arm64.zip", sha256: "7367c0b732474d369e463a45575ca30369652f5366f6d55a2a3c6806ea71a75c", experimental: true },
 ];
 ---
-<Marketing title="Install Goshikq v1.0.0-rc.1" description="Download the Goshikq GitHub prerelease archives or install the unpublished Python and TypeScript SDKs from source." path="/download/">
+<Marketing title="Install Goshikq v1.0.0-rc.2" description="Download the Goshikq GitHub prerelease archives or install the unpublished Python and TypeScript SDKs from source." path="/download/">
   <section class="hero wrap prose">
     <p class="kicker">Install</p>
     <h1>Install the release candidate</h1>
-    <p class="lede"><strong>This is a GitHub prerelease, not stable v1.0.</strong> The published native archives remain <a href={SITE.githubPrerelease}><code>v1.0.0-rc.1</code></a>. In-tree <code>{SITE.version}</code> is not tagged and has no GitHub download assets. There is still no PyPI, npm, or crates.io package. Python <code>{SITE.pythonPackage}=={SITE.pythonVersion}</code> and TypeScript <code>{SITE.tsPackage}@{SITE.tsVersion}</code> install from source. <strong>v1.0.0 is not tagged.</strong></p>
+    <p class="lede"><strong>This is a GitHub prerelease, not stable v1.0.</strong> The latest public native archives are <a href={SITE.githubPrerelease}><code>v1.0.0-rc.2</code></a>. <code>v1.0.0-rc.1</code> is superseded because it shipped <code>jsonwebtoken</code> 9.3.1 (GHSA-h395-gr6q-cpjc / CVE-2026-25537). There is still no PyPI, npm, or crates.io package. Python <code>{SITE.pythonPackage}=={SITE.pythonVersion}</code> and TypeScript <code>{SITE.tsPackage}@{SITE.tsVersion}</code> install from source. <strong>v1.0.0 is not tagged.</strong></p>
     <p><a class="btn btn-primary" href={SITE.githubPrerelease}>Open the GitHub prerelease</a></p>
     <h2>Native archives</h2>
-    <p>Binaries were built from commit <code>1f4d35dd6b73801ede2ec1e64ad906645c4d7a60</code>. After download, verify:</p>
+    <p>Binaries were built from commit <code>07b0abd56bc84fc78532bc2ce8de2c14de9cf29b</code>. After download, verify:</p>
     <pre class="install"><code>sha256sum -c SHA256SUMS</code></pre>
-    <p><a href={`${SITE.githubPrereleaseAssets}/SHA256SUMS`}>Download SHA256SUMS</a> · <a href={`${SITE.githubPrereleaseAssets}/goshikq-1.0.0-rc.1.spdx.json`}>SPDX SBOM</a></p>
+    <p><a href={`${SITE.githubPrereleaseAssets}/SHA256SUMS`}>Download SHA256SUMS</a> · <a href={`${SITE.githubPrereleaseAssets}/goshikq-1.0.0-rc.2.spdx.json`}>SPDX SBOM</a></p>
     <table>
       <thead>
         <tr><th>Platform</th><th>Archive</th><th>SHA256</th></tr>
@@ -40,7 +40,7 @@ const archives = [
     <pre class="install"><code>git clone {SITE.githubGit}</code></pre>
     <p><a href={SITE.github}>Open the repository</a></p>
     <h2>Development snapshot ZIP</h2>
-    <p>This is the <code>main</code> branch, not the immutable <code>v1.0.0-rc.1</code> tag.</p>
+    <p>This is the <code>main</code> branch, not the immutable <code>v1.0.0-rc.2</code> tag.</p>
     <p><a class="btn btn-secondary" href={SITE.zipMain}>Download main.zip</a></p>
     <h2>Python</h2>
     <p>Package name <code>{SITE.pythonPackage}</code> version <code>{SITE.pythonVersion}</code> is built locally. It is not on PyPI.</p>

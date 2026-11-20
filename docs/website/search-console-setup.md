@@ -1,6 +1,6 @@
 # Google Search Console and Bing Webmaster Tools
 
-These steps apply after the Astro site is deployed to GitHub Pages. They do **not** require tagging `v1.0.0-rc.2`. Public binaries remain `v1.0.0-rc.1` until the owner tags rc.2.
+These steps apply after the Astro site is deployed to GitHub Pages. Public native archives are already [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2). Do not treat that tag as Search Console setup or as a Pages deploy.
 
 Do **not** promise indexing speed or rankings. This document is setup only.
 

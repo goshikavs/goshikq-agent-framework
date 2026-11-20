@@ -224,6 +224,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Release-status and download-link claims
+        run: python3 scripts/assert_rc_versions.py
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"

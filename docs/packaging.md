@@ -1,10 +1,10 @@
 # Packaging
 
-Native GitHub **prerelease** `v1.0.0-rc.1`: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1. Nothing is published to PyPI, npm, or crates.io. Stable `v1.0.0` is a separate approval.
+Native GitHub **prerelease** `v1.0.0-rc.2`: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2. Nothing is published to PyPI, npm, or crates.io. Stable `v1.0.0` is a separate approval. `v1.0.0-rc.1` remains published and is superseded due to `jsonwebtoken` 9.3.1.
 
 ## Python (`sdk/python`)
 
-- `pyproject.toml` with hatchling, version `1.0.0rc2` (PEP 440; unpublished). Public GitHub archives remain `v1.0.0-rc.1`.
+- `pyproject.toml` with hatchling, version `1.0.0rc2` (PEP 440; unpublished). Public GitHub archives are `v1.0.0-rc.2`.
 - Optional extras: `openai`, `anthropic`, `dev`
 - Isolated install (temp venv **outside** the repo): `python -m pytest tests/packaging/test_isolated_install.py`
 - Local smoke: `python -m build` then `pip install dist/*.whl` and `python -c "import goshikq_ai"`
@@ -17,7 +17,7 @@ Native GitHub **prerelease** `v1.0.0-rc.1`: https://github.com/goshikavs/goshikq
 
 ## Rust runtime
 
-- Workspace version `1.0.0-rc.2` (Cargo/SemVer prerelease; unpublished until tagged)
+- Workspace version `1.0.0-rc.2` (Cargo/SemVer prerelease; GitHub native archives published, crates.io unpublished)
 - `GET /health` reports `version`
 - Native platforms: see `docs/release/v1.0-supported-platforms.md`. Release-profile archives are built by `.github/workflows/release-candidate.yml`.
 

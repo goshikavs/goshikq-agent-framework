@@ -178,7 +178,7 @@ D does not detect hidden edges (recall below 1). B covers those node ids by rech
 - CLI: `doctor`, `init --template python|typescript`, `run`, `studio`, `runs list|inspect`, `verify`, `agents list`, `workflows validate|publish|run`
 - Executable workflows: versioned schema, validation, Rust pinned-version execution, Studio React Flow editor, node-level run status
 - Documentation site: VitePress (`docs/site`)
-- Local SDK packages: Python wheel/sdist `1.0.0rc2`, TypeScript tarball `1.0.0-rc.2` (not published; public GitHub archives remain `v1.0.0-rc.1`)
+- Local SDK packages: Python wheel/sdist `1.0.0rc2`, TypeScript tarball `1.0.0-rc.2` (not published to PyPI/npm; public GitHub native archives are `v1.0.0-rc.2`)
 - OpenAPI at `GET /api/v1/openapi.json`
 - Event batch ingestion `POST /api/v1/events/batch` (idempotent)
 - OTLP/HTTP protobuf and JSON trace ingest `POST /v1/traces` (mapping `otel-genai-v1`; spans are not verified outcomes)

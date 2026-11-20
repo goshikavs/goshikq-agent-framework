@@ -2,7 +2,7 @@ name: Docs
 
 # Deploys the Astro/Starlight public website to GitHub Pages.
 # Production URL after owner enables Pages: https://goshikavs.github.io/goshikq-agent-framework/
-# Does not publish crates.io / PyPI / npm or retag v1.0.0-rc.1 binaries.
+# Does not publish crates.io / PyPI / npm or retag v1.0.0-rc.1 / v1.0.0-rc.2 binaries.
 
 on:
   push:

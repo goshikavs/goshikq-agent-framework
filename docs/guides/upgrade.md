@@ -1,6 +1,6 @@
 # Upgrade and migration
 
-Goshikq in-tree is `1.0.0-rc.2` (Python `1.0.0rc2`). Public GitHub archives remain `v1.0.0-rc.1` until rc.2 is tagged. Expect possible breaking API changes until a stable `v1.0.0` tag exists. That tag has not been published.
+Goshikq in-tree is `1.0.0-rc.2` (Python `1.0.0rc2`). Public GitHub archives are `v1.0.0-rc.2`. `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1. Expect possible breaking API changes until a stable `v1.0.0` tag exists. That tag has not been published.
 
 ## Database
 

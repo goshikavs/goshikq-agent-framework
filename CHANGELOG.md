@@ -1,9 +1,10 @@
 # Changelog
 
-## v1.0.0-rc.2 — unpublished candidate (JWT advisory)
+## v1.0.0-rc.2 — GitHub prerelease (2026-11-20)
 
-In-tree Cargo/npm `1.0.0-rc.2`, Python `1.0.0rc2`. **Not tagged. Not a GitHub Release.**  
-The public prerelease remains [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1). Do not download unpublished rc.2 assets.
+GitHub prerelease: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2  
+Tag target: `07b0abd56bc84fc78532bc2ce8de2c14de9cf29b`. Not stable v1.0. Not on PyPI, npm, or crates.io.  
+This candidate **supersedes** [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) because rc.1 shipped `jsonwebtoken` 9.3.1 (GHSA-h395-gr6q-cpjc / CVE-2026-25537). The rc.1 tag and archives remain published for history.
 
 ### Security
 
@@ -14,7 +15,7 @@ The public prerelease remains [`v1.0.0-rc.1`](https://github.com/goshikavs/goshi
 
 ### Changed
 
-- Published GitHub archives stay `v1.0.0-rc.1`. Website download links are unchanged until the owner tags rc.2
+- Public download links now point at `v1.0.0-rc.2`. `v1.0.0-rc.1` remains published and is superseded.
 
 
 ## v1.0.0-rc.1 — GitHub prerelease (2026-11-19)
