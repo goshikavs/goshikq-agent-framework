@@ -1,0 +1,6 @@
+6919ccd70cad3febcf10555db028c4b751a14d6f44179979d8eb74c803ebdec8  goshikq-1.0.0-rc.2-linux-amd64.tar.gz
+29a49afe0f57e2abf8d37460d2db1bfd7efafe03983f4b148fc3a08b06782b0f  goshikq-1.0.0-rc.2-linux-arm64.tar.gz
+8d7b415a45fbc746b633c5e66f5c5cd61687d61fbcb4def43316db8156b7323e  goshikq-1.0.0-rc.2-macos-amd64.tar.gz
+92cf0e3bda86d1649b7293a9fd5a0c2ef1389d38042409a1744087099553ddb5  goshikq-1.0.0-rc.2-macos-arm64.tar.gz
+8ee11215af1d9912c97d4928c7ef9fe960232de41685abbb4e7f3b0481414af0  goshikq-1.0.0-rc.2-windows-amd64.zip
+7367c0b732474d369e463a45575ca30369652f5366f6d55a2a3c6806ea71a75c  goshikq-1.0.0-rc.2-windows-arm64.zip

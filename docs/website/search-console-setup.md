@@ -1,4 +1,6 @@
-# Google Search Console and Bing Webmaster Tools (v1.0.0-rc.1)
+# Google Search Console and Bing Webmaster Tools
+
+These steps apply after the Astro site is deployed to GitHub Pages. They do **not** require tagging `v1.0.0-rc.2`. Public binaries remain `v1.0.0-rc.1` until the owner tags rc.2.
 
 Do **not** promise indexing speed or rankings. This document is setup only.
 
@@ -44,6 +46,15 @@ GitHub org verification (optional): Search Console also supports a **Domain** pr
 - Canonical URLs derived from `PUBLIC_SITE_URL` + `PUBLIC_BASE_PATH`.
 - README points at the GitHub Pages URL.
 - Homepage / About website field: set the GitHub repo **Website** to `https://goshikavs.github.io/goshikq-agent-framework/` (owner/API).
+
+## Canonical and URL inspection (after deploy is HTTP 200)
+
+1. Open the live homepage and confirm `<link rel="canonical" href="https://goshikavs.github.io/goshikq-agent-framework/">`.
+2. Confirm `/docs/`, `/quickstart/`, `/download/`, and `/studio/` canonicals keep `/goshikq-agent-framework/` and do not use `localhost`.
+3. Fetch `https://goshikavs.github.io/goshikq-agent-framework/robots.txt` — `Allow: /` and `Sitemap: https://goshikavs.github.io/goshikq-agent-framework/sitemap-index.xml`.
+4. Fetch the sitemap. Every `<loc>` must be under that prefix.
+5. Google Search Console → URL Inspection → live test for `/` and `/docs/`. Request indexing only after the live test is valid. A request is not a ranking guarantee.
+6. Repeat URL inspection in Bing Webmaster Tools.
 
 ## What remains owner-only
 
