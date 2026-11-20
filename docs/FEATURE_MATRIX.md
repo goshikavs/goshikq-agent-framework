@@ -2,7 +2,7 @@
 
 Labels: **IMPLEMENTED_AND_TESTED**, **IMPLEMENTED_UNTESTED**, **PARTIAL**, **PLANNED**, **BLOCKED**.
 
-Inventory date: 2026-10-30. Claims require code plus a passing test or a live run recorded in `docs/IMPLEMENTATION_STATUS.md` / `docs/milestones/`. Latest milestone: **v0.9.1**.
+Current public status: GitHub prerelease `v1.0.0-rc.2` (not stable v1.0.0). Claims require code plus a passing test or a live run recorded in `docs/IMPLEMENTATION_STATUS.md` / `docs/milestones/`. Historical inventory date: 2026-10-30 (**v0.9.1**).
 
 | Area | Feature | Status | Notes |
 |---|---|---|---|

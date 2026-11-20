@@ -1,12 +1,10 @@
 # Implementation status
 
-Honest inventory as of 2026-10-30 UTC (**v0.9.1** release-gate closure in tree). Features are **available**, **experimental**, or **planned**. Nothing here is marked available unless it runs against persisted data or real code paths.
+Current public status: GitHub **prerelease** [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2). This is **not** stable v1.0.0. Features are **available**, **experimental**, or **planned**. Nothing here is marked available unless it runs against persisted data or real code paths.
 
-v1.0 engineering continues on `release/v1.0-hardening`. See `docs/release/v1.0-readiness-audit.md` and `docs/release/v1.0-release-gates.md`. **v1.0.0 is not tagged or published.**
+See `docs/release/v1.0-readiness-audit.md` and `docs/release/v1.0-release-gates.md`. Historical in-tree milestone: **v0.9.1** (`docs/milestones/v0.9.1-report.md`). Temporal remains deferred.
 
-Latest milestone: **v0.9.1** (`docs/milestones/v0.9.1-report.md`). v1.0 is **not** ready (`docs/release/v1.0-readiness.md`). Temporal is deferred. No commit/push/publish this cycle.
-
-## Commands re-run on this host (v0.9.1)
+## Commands re-run on this host (historical v0.9.1 inventory)
 
 ```text
 cargo test -p goshikq-server --bin goshikq-server                            # 11 passed
