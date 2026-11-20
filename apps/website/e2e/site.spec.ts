@@ -39,6 +39,7 @@ test.describe("Goshikq website", () => {
       "https://github.com/goshikavs/goshikq-agent-framework/archive/refs/heads/main.zip",
     );
     await expect(page.locator('a[href*="/releases/download/v1.0.0/"]')).toHaveCount(0);
+    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]')).toHaveCount(0);
     await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.1/"]')).not.toHaveCount(0);
     await expect(page.locator('a[href*="pypi.org/project"]')).toHaveCount(0);
     await expect(page.locator('a[href*="crates.io"]')).toHaveCount(0);

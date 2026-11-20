@@ -437,6 +437,8 @@ jobs:
         run: python scripts/assert_rc_versions.py
       - name: Unused sqlx backends are not reachable
         run: python scripts/assert_unused_sqlx_backends.py
+      - name: jsonwebtoken is patched for GHSA-h395-gr6q-cpjc
+        run: python scripts/assert_jsonwebtoken_patched.py
       - name: cargo-audit
         run: |
           cargo install cargo-audit --locked

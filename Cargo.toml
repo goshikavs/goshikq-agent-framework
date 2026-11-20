@@ -11,7 +11,7 @@ members = [
 ]
 
 [workspace.package]
-version = "1.0.0-rc.1"
+version = "1.0.0-rc.2"
 edition = "2021"
 rust-version = "1.94"
 license = "Apache-2.0"
@@ -58,7 +58,7 @@ dashmap = "6"
 postgresql_embedded = { version = "0.20.4", default-features = false, features = ["tokio", "theseus", "rustls"] }
 rand = "0.8"
 rand_chacha = "0.3"
-jsonwebtoken = "9"
+jsonwebtoken = { version = "12", default-features = false, features = ["use_pem", "rust_crypto"] }
 
 [profile.release]
 lto = "thin"

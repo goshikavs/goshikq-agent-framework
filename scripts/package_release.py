@@ -105,7 +105,7 @@ def is_windows(platform: str) -> bool:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--platform", required=True, help="linux-amd64, windows-amd64, ...")
-    p.add_argument("--version", default="1.0.0-rc.1")
+    p.add_argument("--version", default="1.0.0-rc.2")
     p.add_argument("--commit", default=os.environ.get("GITHUB_SHA", "unknown"))
     p.add_argument("--release-dir", default="target/release")
     p.add_argument("--out-dir", default="dist")

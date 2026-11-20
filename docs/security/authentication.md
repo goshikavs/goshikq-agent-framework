@@ -14,7 +14,7 @@ Production mode is `GOSHIKQ_AUTH_MODE=oidc`. Local development may use `none` on
 
 ## OIDC / OAuth2
 
-Validated with `jsonwebtoken` (issuer, audience, expiry, nbf, signature). Signing keys come from `GOSHIKQ_OIDC_JWKS_URL` (HTTPS, or loopback HTTP in tests). Production algorithms: RS256/RS384/RS512, ES256/ES384, PS256/PS384/PS512. `alg=none` and HMAC are rejected unless loopback HMAC test mode is on.
+Validated with `jsonwebtoken` **12.0.0** (`rust_crypto`, patched for GHSA-h395-gr6q-cpjc / CVE-2026-25537). Checks: issuer, audience, expiry, nbf-when-present, signature. Required registered claims: `exp`, `iss`, `aud`, `sub`. String `exp`/`nbf` values are rejected. Signing keys come from `GOSHIKQ_OIDC_JWKS_URL` (HTTPS, or loopback HTTP in tests). Production algorithms: RS256/RS384/RS512, ES256/ES384, PS256/PS384/PS512. `alg=none` and HMAC are rejected unless loopback HMAC test mode is on.
 
 Unknown `kid` forces a JWKS re-fetch so key rotation does not wait for the cache TTL (`GOSHIKQ_OIDC_JWKS_CACHE_SECONDS`, default 300).
 

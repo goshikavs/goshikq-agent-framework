@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Require consistent v1.0.0-rc.1 package versions across ecosystems.
+"""Require consistent v1.0.0-rc.2 package versions across ecosystems.
 
-Cargo/npm use SemVer prerelease `1.0.0-rc.1`.
-Python uses PEP 440 `1.0.0rc1`.
+Cargo/npm use SemVer prerelease `1.0.0-rc.2`.
+Python uses PEP 440 `1.0.0rc2`.
 Do not substitute one string into every ecosystem.
+The published GitHub prerelease remains v1.0.0-rc.1 until the owner tags rc.2.
 """
 
 from __future__ import annotations
@@ -15,9 +16,9 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CARGO = "1.0.0-rc.1"
-NPM = "1.0.0-rc.1"
-PY = "1.0.0rc1"
+CARGO = "1.0.0-rc.2"
+NPM = "1.0.0-rc.2"
+PY = "1.0.0rc2"
 
 errors: list[str] = []
 
@@ -49,8 +50,8 @@ def main() -> int:
     check(cargo_workspace_version() == CARGO, f"Cargo.toml workspace.package.version must be {CARGO}")
     check(pyproject_version() == PY, f"sdk/python/pyproject.toml version must be {PY} (PEP 440)")
     check(
-        '__version__ = "1.0.0rc1"' in read(ROOT / "sdk" / "python" / "src" / "goshikq_ai" / "_version.py"),
-        "Python _version.py must match PEP 440 1.0.0rc1",
+        '__version__ = "1.0.0rc2"' in read(ROOT / "sdk" / "python" / "src" / "goshikq_ai" / "_version.py"),
+        "Python _version.py must match PEP 440 1.0.0rc2",
     )
     npm_paths = [
         ROOT / "package.json",
@@ -61,11 +62,19 @@ def main() -> int:
     for p in npm_paths:
         check(json_version(p) == NPM, f"{p.relative_to(ROOT)} version must be {NPM}")
     ts_ver = read(ROOT / "sdk" / "typescript" / "src" / "version.ts")
-    check(f'"{NPM}"' in ts_ver, "sdk/typescript/src/version.ts must export 1.0.0-rc.1")
+    check(f'"{NPM}"' in ts_ver, "sdk/typescript/src/version.ts must export 1.0.0-rc.2")
     site = read(ROOT / "apps" / "website" / "src" / "lib" / "site.ts")
-    check(f'version: "{NPM}"' in site, "website SITE.version must be 1.0.0-rc.1")
-    check(f'pythonVersion: "{PY}"' in site, "website SITE.pythonVersion must be 1.0.0rc1")
-    check(f'tsVersion: "{NPM}"' in site, "website SITE.tsVersion must be 1.0.0-rc.1")
+    check(f'version: "{NPM}"' in site, "website SITE.version must be 1.0.0-rc.2")
+    check(f'pythonVersion: "{PY}"' in site, "website SITE.pythonVersion must be 1.0.0rc2")
+    check(f'tsVersion: "{NPM}"' in site, "website SITE.tsVersion must be 1.0.0-rc.2")
+    check(
+        "releases/tag/v1.0.0-rc.1" in site,
+        "website public download links must still point at published v1.0.0-rc.1",
+    )
+    check(
+        "releases/download/v1.0.0-rc.2" not in site,
+        "website must not link unpublished v1.0.0-rc.2 GitHub assets",
+    )
     check("statusLabel: \"Release candidate\"" in site, "website must label Release candidate, not stable v1.0")
     cli = read(ROOT / "apps" / "cli" / "src" / "main.rs")
     check("CARGO_PKG_VERSION" in cli, "CLI user-agent must use CARGO_PKG_VERSION")

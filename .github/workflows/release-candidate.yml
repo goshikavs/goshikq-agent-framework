@@ -7,7 +7,7 @@ on:
       candidate:
         description: Candidate version label (does not create a git tag)
         required: false
-        default: "1.0.0-rc.1"
+        default: "1.0.0-rc.2"
   push:
     branches: [release/v1.0-hardening]
     paths:
@@ -43,7 +43,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CANDIDATE: ${{ github.event.inputs.candidate || '1.0.0-rc.1' }}
+  CANDIDATE: ${{ github.event.inputs.candidate || '1.0.0-rc.2' }}
   RUST_TOOLCHAIN: "1.98.0"
 
 jobs:
@@ -251,7 +251,7 @@ jobs:
           pathlib.Path("dist/SHA256SUMS").write_text("\n".join(lines) + "\n", encoding="utf-8")
           pathlib.Path("dist/artifact-manifest.json").write_text(json.dumps({
               "commit": os.environ["GITHUB_SHA"],
-              "candidate": os.environ.get("CANDIDATE", "1.0.0-rc.1"),
+              "candidate": os.environ.get("CANDIDATE", "1.0.0-rc.2"),
               "run": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
               "artifacts": files,
               "publication": "CI artifacts only. No GitHub Release, tag, or registry publish.",

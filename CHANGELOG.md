@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.0.0-rc.2 — unpublished candidate (JWT advisory)
+
+In-tree Cargo/npm `1.0.0-rc.2`, Python `1.0.0rc2`. **Not tagged. Not a GitHub Release.**  
+The public prerelease remains [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1). Do not download unpublished rc.2 assets.
+
+### Security
+
+- Upgraded `jsonwebtoken` 9.3.1 → **12.0.0** (`rust_crypto` + `use_pem`) for [GHSA-h395-gr6q-cpjc](https://github.com/advisories/GHSA-h395-gr6q-cpjc) / CVE-2026-25537. 12.0.0 also updates `rsa` to 0.10.0 (Marvin) and `crypto-bigint` to 0.7.11.
+- OIDC validation now requires typed `exp`, `iss`, `aud`, `sub`; keeps `validate_nbf` when `nbf` is present
+- CI `scripts/assert_jsonwebtoken_patched.py` fails if `Cargo.lock` has jsonwebtoken older than 10.3.0
+- Adversarial OIDC unit and JWKS integration tests for malformed claims, alg confusion, unknown kid, and tenant isolation
+
+### Changed
+
+- Published GitHub archives stay `v1.0.0-rc.1`. Website download links are unchanged until the owner tags rc.2
+
+
 ## v1.0.0-rc.1 — GitHub prerelease (2026-11-19)
 
 GitHub prerelease: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1  

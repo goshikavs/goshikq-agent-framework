@@ -142,7 +142,11 @@ html[data-theme="light"] .btn-primary { color: #fff; }
 .badge-alpha { background: color-mix(in srgb, var(--gk-run) 20%, transparent); color: var(--gk-run); }
 .badge-available { background: color-mix(in srgb, var(--gk-verify) 18%, transparent); color: var(--gk-verify); }
 .badge-experimental { background: color-mix(in srgb, var(--gk-run) 18%, transparent); color: var(--gk-run); }
-.badge-planned { background: color-mix(in srgb, var(--gk-muted) 22%, transparent); color: var(--gk-muted); }
+.badge-planned {
+  background: var(--gk-ink-3);
+  color: var(--gk-text);
+  border: 1px solid var(--gk-line);
+}
 
 h1, h2, h3 {
   font-family: var(--gk-display);

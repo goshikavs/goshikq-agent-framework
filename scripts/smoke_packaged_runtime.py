@@ -184,7 +184,8 @@ def main() -> int:
         wait_ready(base, proc, log)
         health = http_json(f"{base}/health")
         print("health:", json.dumps(health, sort_keys=True))
-        if health.get("version") not in {"1.0.0-rc.1", env.get("EXPECTED_VERSION", "1.0.0-rc.1")}:
+        expected = env.get("EXPECTED_VERSION", "1.0.0-rc.2")
+        if health.get("version") not in {"1.0.0-rc.1", "1.0.0-rc.2", expected}:
             print("warning: /health version", health.get("version"), file=sys.stderr)
 
         if not args.skip_agent:

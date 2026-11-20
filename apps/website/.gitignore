@@ -3,6 +3,7 @@ dist/
 node_modules/
 test-results/
 playwright-report/
+lighthouse-*.json
 public/media/studio/
 src/content/docs/docs/*
 !src/content/docs/docs/index.mdx
