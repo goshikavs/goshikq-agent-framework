@@ -4,7 +4,7 @@ Goshikq is an open-source **AI agent framework** with a **Rust runtime** for **d
 
 **Build Agents. Verify Outcomes.**
 
-Source: [goshikavs/goshikq-agent-framework](https://github.com/goshikavs/goshikq-agent-framework). Docs (GitHub Pages, after the docs workflow runs on `main`): [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/).
+Source: [goshikavs/goshikq-agent-framework](https://github.com/goshikavs/goshikq-agent-framework). Website (GitHub Pages, after the docs workflow runs on `main`): [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/). Native archives: GitHub prerelease [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1).
 
 **Status:** GitHub **prerelease** [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) (binaries from `1f4d35dd6b73801ede2ec1e64ad906645c4d7a60`). This is **not** stable v1.0. There is **no** PyPI, npm, or crates.io package. Windows ARM64 is experimental. Not SOC 2 / HIPAA / PCI certified.
 

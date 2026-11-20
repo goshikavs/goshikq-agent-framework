@@ -6,6 +6,8 @@ html {
   scroll-behavior: smooth;
 }
 
+img, video { max-width: 100%; height: auto; }
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -34,6 +36,8 @@ a:hover { color: var(--gk-accent); }
 
 .wrap {
   width: min(var(--gk-max), calc(100% - 2rem));
+  max-width: 100%;
+  min-width: 0;
   margin-inline: auto;
 }
 
@@ -41,6 +45,7 @@ a:hover { color: var(--gk-accent); }
   position: sticky;
   top: 0;
   z-index: 10;
+  isolation: isolate;
   backdrop-filter: blur(12px);
   background: color-mix(in srgb, var(--gk-ink) 86%, transparent);
   border-bottom: 1px solid var(--gk-line);
@@ -51,6 +56,7 @@ a:hover { color: var(--gk-accent); }
   justify-content: space-between;
   gap: 1rem;
   min-height: 4rem;
+  min-width: 0;
 }
 .brand {
   display: inline-flex;
@@ -113,13 +119,15 @@ html[data-theme="light"] .btn-primary { color: #fff; }
 
 .hero { padding: 4.5rem 0 3rem; }
 .kicker {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--gk-muted);
+  max-width: 100%;
 }
 .badge {
   display: inline-flex;
@@ -152,8 +160,17 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
   border-radius: var(--gk-radius);
   padding: 0.85rem 1rem;
   overflow-x: auto;
+  max-width: 100%;
   font-family: var(--gk-mono);
   font-size: 0.88rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.install code {
+  display: block;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .shot {
@@ -171,11 +188,12 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
   font-size: 0.9rem;
 }
 
-.section { padding: 3.2rem 0; border-top: 1px solid var(--gk-line); }
+.section { padding: 3.2rem 0; border-top: 1px solid var(--gk-line); min-width: 0; max-width: 100%; }
+main { min-width: 0; overflow-x: clip; }
 .grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
 }
 .card {
   background: var(--gk-ink-2);
@@ -196,13 +214,14 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
 
 .diagram {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   background: var(--gk-ink-2);
   border: 1px solid var(--gk-line);
   border-radius: var(--gk-radius);
   padding: 1rem;
 }
-.diagram svg { width: 100%; height: auto; min-width: 640px; }
+.diagram svg { display: block; height: auto; min-width: 640px; }
 
 .site-footer {
   border-top: 1px solid var(--gk-line);
@@ -229,7 +248,7 @@ th { color: var(--gk-muted); font-weight: 600; }
 .gallery {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
 }
 .gallery button {
   padding: 0;

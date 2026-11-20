@@ -1,5 +1,6 @@
 ---
 import Marketing from "../layouts/Marketing.astro";
+import { withBase } from "../lib/site";
 
 const shots = [
   { src: "/media/studio/goshikq-studio-dashboard.webp", alt: "Studio overview metrics", caption: "Overview from persisted runs" },
@@ -21,13 +22,13 @@ const shots = [
     <p class="kicker">Studio</p>
     <h1>See the run, not the pitch</h1>
     <p class="lede">Screenshots below were captured from the running Next.js app against <code>goshikq-server</code>. Tools, Goals, Evaluations, Regression, and Benchmarks remain planned.</p>
-    <a class="btn btn-primary" href="/docs/studio/">Studio docs</a>
+    <a class="btn btn-primary" href={withBase("/docs/studio/")}>Studio docs</a>
   </section>
   <section class="section wrap">
     <div class="gallery">
       {shots.map((s) => (
-        <button type="button" data-src={s.src} data-alt={s.alt}>
-          <img src={s.src} alt={s.alt} width="1600" height="1000" loading="lazy" decoding="async" />
+        <button type="button" data-src={withBase(s.src)} data-alt={s.alt}>
+          <img src={withBase(s.src)} alt={s.alt} width="1600" height="1000" loading="lazy" decoding="async" />
           <span>{s.caption}</span>
         </button>
       ))}
@@ -41,10 +42,17 @@ const shots = [
 <script>
   const dialog = document.getElementById("shot-dialog");
   const img = document.getElementById("shot-dialog-img");
-  document.querySelectorAll(".gallery button").forEach((btn) => {
+  if (!(dialog instanceof HTMLDialogElement) || !(img instanceof HTMLImageElement)) {
+    throw new Error("screenshot dialog missing");
+  }
+  document.querySelectorAll<HTMLButtonElement>(".gallery button").forEach((btn) => {
     btn.addEventListener("click", () => {
-      img.src = btn.dataset.src;
-      img.alt = btn.dataset.alt;
+      const src = btn.dataset.src;
+      if (!src) {
+        return;
+      }
+      img.src = src;
+      img.alt = btn.dataset.alt ?? "";
       dialog.showModal();
     });
   });

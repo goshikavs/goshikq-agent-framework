@@ -12,7 +12,10 @@
   <div id="demo-live" class="steps" role="status" aria-live="polite"></div>
 </section>
 <script>
-  const cases = {
+  type CaseKey = "happy" | "accepted" | "never";
+  type Row = { k: string; v: string; ok?: boolean };
+
+  const cases: Record<CaseKey, Row[]> = {
     happy: [
       { k: "Goal", v: "order.status=refunded and refund.status=settled" },
       { k: "Execution", v: "submit_refund dispatched; processor accepted" },
@@ -33,18 +36,40 @@
     ],
   };
 
-  const live = document.getElementById("demo-live");
-  const tabs = [...document.querySelectorAll("[data-case]")];
-  function render(key) {
+  function isCaseKey(value: string | undefined): value is CaseKey {
+    return value === "happy" || value === "accepted" || value === "never";
+  }
+
+  const liveNode = document.getElementById("demo-live");
+  if (!(liveNode instanceof HTMLElement)) {
+    throw new Error("demo-live missing");
+  }
+  const live: HTMLElement = liveNode;
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-case]")];
+
+  function render(key: CaseKey): void {
     const rows = cases[key];
-    live.innerHTML = rows.map((row) => `
+    live.innerHTML = rows
+      .map(
+        (row) => `
       <div class="step">
         <strong>${row.k}</strong>
         <span>${row.v}</span>
         <span class="badge ${row.ok === true ? "badge-available" : row.ok === false ? "badge-planned" : ""}">${row.ok === true ? "verified" : row.ok === false ? "not verified" : ""}</span>
-      </div>`).join("");
-    tabs.forEach((t) => t.setAttribute("aria-selected", t.dataset.case === key ? "true" : "false"));
+      </div>`,
+      )
+      .join("");
+    for (const tab of tabs) {
+      tab.setAttribute("aria-selected", tab.dataset.case === key ? "true" : "false");
+    }
   }
-  tabs.forEach((t) => t.addEventListener("click", () => render(t.dataset.case)));
+
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => {
+      if (isCaseKey(tab.dataset.case)) {
+        render(tab.dataset.case);
+      }
+    });
+  }
   render("happy");
 </script>

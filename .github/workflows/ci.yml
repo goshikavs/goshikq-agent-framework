@@ -227,14 +227,30 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
+      - name: Install website dependencies
+        working-directory: apps/website
+        run: bun install --frozen-lockfile
+      - name: Astro typecheck
+        working-directory: apps/website
+        env:
+          PUBLIC_SITE_URL: http://127.0.0.1:4321
+          ASTRO_TELEMETRY_DISABLED: "1"
+        run: bun run check
+      - name: GitHub Pages base-path build
+        working-directory: apps/website
+        env:
+          PUBLIC_SITE_URL: https://goshikavs.github.io
+          PUBLIC_BASE_PATH: /goshikq-agent-framework/
+          ASTRO_TELEMETRY_DISABLED: "1"
+        run: |
+          bun run build
+          bun scripts/assert_pages_base.mjs
       - name: Build public website
         working-directory: apps/website
         env:
           PUBLIC_SITE_URL: http://127.0.0.1:4321
           ASTRO_TELEMETRY_DISABLED: "1"
-        run: |
-          bun install --frozen-lockfile
-          bun run build
+        run: bun run build
       - name: Playwright
         working-directory: apps/website
         env:

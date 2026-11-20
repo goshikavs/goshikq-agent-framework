@@ -1,5 +1,9 @@
 name: Docs
 
+# Deploys the Astro/Starlight public website to GitHub Pages.
+# Production URL after owner enables Pages: https://goshikavs.github.io/goshikq-agent-framework/
+# Does not publish crates.io / PyPI / npm or retag v1.0.0-rc.1 binaries.
+
 on:
   push:
     branches: [main]
@@ -16,24 +20,30 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
-      - name: Install and build VitePress
-        working-directory: docs/site
+      - name: Build Astro website
+        working-directory: apps/website
+        env:
+          PUBLIC_SITE_URL: https://goshikavs.github.io
+          PUBLIC_BASE_PATH: /goshikq-agent-framework/
+          ASTRO_TELEMETRY_DISABLED: "1"
         run: |
           bun install --frozen-lockfile
+          bun run check
           bun run build
+          bun scripts/assert_pages_base.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/site/.vitepress/dist
+          path: apps/website/dist
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

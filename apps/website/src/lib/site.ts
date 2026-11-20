@@ -33,8 +33,25 @@ export const NAV = [
   { href: "/features/", label: "Product" },
   { href: "/docs/", label: "Documentation" },
   { href: "/quickstart/", label: "Quickstart" },
+  { href: "/download/", label: "Install" },
   { href: "/examples/", label: "Examples" },
   { href: "/architecture/", label: "Architecture" },
   { href: "/studio/", label: "Studio" },
   { href: "/community/", label: "Community" },
 ] as const;
+
+/** Prefix an in-site path with Astro `base` (GitHub Pages `/goshikq-agent-framework/`). */
+export function withBase(path: string): string {
+  if (/^(https?:|mailto:|#)/i.test(path)) {
+    return path;
+  }
+  const base = import.meta.env.BASE_URL || "/";
+  if (path === "/" || path === "") {
+    return base;
+  }
+  return `${base}${path.replace(/^\//, "")}`;
+}
+
+export function canonicalUrl(path: string, site: string): string {
+  return new URL(withBase(path), site.endsWith("/") ? site : `${site}/`).href;
+}

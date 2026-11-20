@@ -1,6 +1,7 @@
 ---
 import Marketing from "../layouts/Marketing.astro";
 import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
+import { withBase } from "../lib/site";
 ---
 <Marketing title="Architecture" description="How Goshikq splits a Rust execution runtime from Python and TypeScript SDKs, with independent goal verification." path="/architecture/">
   <section class="hero wrap">
@@ -22,6 +23,6 @@ import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
         </tbody>
       </table>
     </div>
-    <p><a href="/docs/core-concepts/">Architecture docs</a> · <a href="https://github.com/goshikavs/goshikq-agent-framework/blob/main/docs/decisions/ADR-001-runtime-boundaries.md">ADR-001</a></p>
+    <p><a href={withBase("/docs/core-concepts/")}>Architecture docs</a> · <a href="https://github.com/goshikavs/goshikq-agent-framework/blob/main/docs/decisions/ADR-001-runtime-boundaries.md">ADR-001</a></p>
   </section>
 </Marketing>

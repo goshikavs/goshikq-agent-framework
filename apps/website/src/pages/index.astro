@@ -3,7 +3,7 @@ import Marketing from "../layouts/Marketing.astro";
 import Shot from "../components/Shot.astro";
 import VerifyDemo from "../components/VerifyDemo.astro";
 import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
-import { SITE } from "../lib/site";
+import { SITE, withBase } from "../lib/site";
 
 const capabilities = [
   { title: "Durable execution", status: "Available", href: "/docs/durable-execution/", body: "Checkpoints, action journal, fencing leases, and a process-crash harness. Waiting for approval or external state survives restart." },
@@ -24,7 +24,7 @@ const capabilities = [
     <h1>{SITE.headline}</h1>
     <p class="lede">{SITE.description}</p>
     <div class="cta-row">
-      <a class="btn btn-primary" href="/quickstart/">Get started</a>
+      <a class="btn btn-primary" href={withBase("/quickstart/")}>Get started</a>
       <a class="btn btn-secondary" href={SITE.githubPrerelease}>v1.0.0-rc.1 prerelease</a>
       <a class="btn btn-ghost" href={SITE.github}>View on GitHub</a>
     </div>
@@ -56,7 +56,7 @@ python examples/hello-agent/main.py
           <p>A StateProvider snapshot is evaluated independently. never_settles ends UNVERIFIED / INCONCLUSIVE, not as a fake success.</p>
         </article>
       </div>
-      <p><a href="/examples/refund-verification/">Retail refund walkthrough</a></p>
+      <p><a href={withBase("/examples/refund-verification/")}>Retail refund walkthrough</a></p>
     </div>
   </section>
 
@@ -69,12 +69,12 @@ python examples/hello-agent/main.py
   <section class="section">
     <div class="wrap">
       <h2>What is implemented</h2>
-      <p class="lede">Status labels match <a href="/docs/status/">implementation status</a>. Planned Studio catalogs are not shown as working product.</p>
+      <p class="lede">Status labels match <a href={withBase("/docs/status/")}>implementation status</a>. Planned Studio catalogs are not shown as working product.</p>
       <div class="grid">
         {capabilities.map((c) => (
           <article class="card">
             <span class={`badge ${c.status === "Available" ? "badge-available" : c.status === "Mixed" ? "badge-experimental" : "badge-planned"}`}>{c.status}</span>
-            <h3><a href={c.href}>{c.title}</a></h3>
+            <h3><a href={withBase(c.href)}>{c.title}</a></h3>
             <p>{c.body}</p>
           </article>
         ))}
@@ -86,7 +86,7 @@ python examples/hello-agent/main.py
     <div class="wrap">
       <h2>Architecture</h2>
       <ArchitectureDiagram />
-      <p><a href="/architecture/">Architecture details</a> · <a href="/docs/core-concepts/">Technical docs</a></p>
+      <p><a href={withBase("/architecture/")}>Architecture details</a> · <a href={withBase("/docs/core-concepts/")}>Technical docs</a></p>
     </div>
   </section>
 
@@ -96,7 +96,7 @@ python examples/hello-agent/main.py
       <div class="grid">
         <article class="card"><h3><a href={SITE.github}>Source</a></h3><p>Apache 2.0 monorepo. Rust runtime, Python and TypeScript SDKs, Next.js Studio.</p></article>
         <article class="card"><h3><a href={SITE.ciUrl}>CI</a></h3><p>GitHub Actions on main: rust, SDKs, Studio, Playwright, integration, docker-smoke, security scans.</p></article>
-        <article class="card"><h3><a href="/docs/status/">Limitations</a></h3><p>No SOC 2 / HIPAA / PCI claim. No published PyPI or npm package. v1.0 is not ready.</p></article>
+        <article class="card"><h3><a href={withBase("/docs/status/")}>Limitations</a></h3><p>No SOC 2 / HIPAA / PCI claim. No published PyPI or npm package. v1.0 is not ready.</p></article>
       </div>
     </div>
   </section>

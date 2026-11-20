@@ -5,6 +5,15 @@ import starlight from "@astrojs/starlight";
 const site = process.env.PUBLIC_SITE_URL || "http://localhost:4321";
 const base = process.env.PUBLIC_BASE_PATH || "/";
 
+/** @param {string} path */
+function publicAsset(path) {
+  const origin = site.endsWith("/") ? site : `${site}/`;
+  const prefix = base.endsWith("/") ? base : `${base}/`;
+  const rel = String(path).replace(/^\//, "");
+  const pathname = `${prefix}${rel}`.replace(/\/{2,}/g, "/");
+  return new URL(pathname, origin).href;
+}
+
 export default defineConfig({
   site,
   base,
@@ -34,7 +43,7 @@ export default defineConfig({
         { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
         {
           tag: "meta",
-          attrs: { property: "og:image", content: new URL("media/studio/goshikq-studio-dashboard.webp", site).href },
+          attrs: { property: "og:image", content: publicAsset("/media/studio/goshikq-studio-dashboard.webp") },
         },
       ],
       sidebar: [

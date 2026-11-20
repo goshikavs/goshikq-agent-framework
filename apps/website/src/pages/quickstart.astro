@@ -1,5 +1,6 @@
 ---
 import Marketing from "../layouts/Marketing.astro";
+import { withBase } from "../lib/site";
 ---
 <Marketing title="Quickstart" description="Run Goshikq locally with the Rust runtime, a mock model, and goal verification. No paid API keys." path="/quickstart/">
   <section class="hero wrap prose">
@@ -23,6 +24,6 @@ python examples/hello-agent/main.py
     <h2>4. Studio</h2>
     <pre class="install"><code>cd apps/studio && bun install && bun run dev
 # http://127.0.0.1:3000 → Executions → hello-agent</code></pre>
-    <p><a href="/download/">Install options</a> · <a href="/docs/getting-started/">Docs getting started</a> · <a href="/docs/typescript-sdk/">TypeScript SDK</a></p>
+    <p><a href={withBase("/download/")}>Install options</a> · <a href={withBase("/docs/getting-started/")}>Docs getting started</a> · <a href={withBase("/docs/typescript-sdk/")}>TypeScript SDK</a></p>
   </section>
 </Marketing>
