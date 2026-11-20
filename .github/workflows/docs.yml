@@ -37,7 +37,7 @@ jobs:
           bun run check
           bun run build
           bun scripts/assert_pages_base.mjs
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: apps/website/dist
 
