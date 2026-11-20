@@ -20,7 +20,7 @@ jobs:
   rust-lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.98.0
@@ -35,7 +35,7 @@ jobs:
   rust:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.98.0
@@ -84,7 +84,7 @@ jobs:
             os: windows-11-arm
             experimental: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.98.0
@@ -149,7 +149,7 @@ jobs:
       matrix:
         python: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
@@ -162,7 +162,7 @@ jobs:
   python-sdk:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -183,7 +183,7 @@ jobs:
   typescript:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
@@ -197,7 +197,7 @@ jobs:
   studio:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
@@ -210,7 +210,7 @@ jobs:
   docs:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
@@ -223,7 +223,7 @@ jobs:
   website:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Release-status and download-link claims
         run: python3 scripts/assert_rc_versions.py
       - uses: oven-sh/setup-bun@v2
@@ -283,7 +283,7 @@ jobs:
       GOSHIKQ_BIND: 127.0.0.1:7400
       GOSHIKQ_RUNTIME_URL: http://127.0.0.1:7400
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.98.0
@@ -338,7 +338,7 @@ jobs:
       GOSHIKQ_BIND: 127.0.0.1:7400
       GOSHIKQ_RUNTIME_URL: http://127.0.0.1:7400
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.98.0
@@ -381,7 +381,7 @@ jobs:
       GOSHIKQ_BIND: 127.0.0.1:7400
       GOSHIKQ_RUNTIME_URL: http://127.0.0.1:7400
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.98.0
@@ -403,7 +403,7 @@ jobs:
   docker-smoke:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Compose smoke
         run: bash scripts/docker-smoke.sh
       - name: Record
@@ -412,7 +412,7 @@ jobs:
   docker-smoke-arm:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Compose smoke (linux/arm64 native)
         run: bash scripts/docker-smoke.sh
       - name: Record
@@ -421,7 +421,7 @@ jobs:
   security-scans:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.98.0
