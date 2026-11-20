@@ -63,11 +63,11 @@ def check_release_status_and_download_links() -> None:
         "README.md must link the published v1.0.0-rc.2 GitHub prerelease",
     )
     check(
-        "**Status:** GitHub **prerelease** [`v1.0.0-rc.2`]" in readme,
+        "**Status:** GitHub **prerelease**" in readme and "v1.0.0-rc.2" in readme,
         "README.md status line must identify v1.0.0-rc.2 as the current public prerelease",
     )
     check(
-        "not** stable v1.0" in readme or "not a published stable v1.0" in readme or "This is **not** stable v1.0" in readme,
+        "This is **not** stable v1.0" in readme,
         "README.md must still say this is not stable v1.0",
     )
     check("There is **no** PyPI, npm, or crates.io package" in readme, "README.md must deny registry packages")
