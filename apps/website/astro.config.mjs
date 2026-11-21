@@ -4,6 +4,7 @@ import starlight from "@astrojs/starlight";
 
 const site = process.env.PUBLIC_SITE_URL || "http://localhost:4321";
 const base = process.env.PUBLIC_BASE_PATH || "/";
+const googleSiteVerification = String(process.env.PUBLIC_GOOGLE_SITE_VERIFICATION || "").trim();
 
 /** @param {string} path */
 function publicAsset(path) {
@@ -45,6 +46,12 @@ export default defineConfig({
           tag: "meta",
           attrs: { property: "og:image", content: publicAsset("/media/studio/goshikq-studio-dashboard.webp") },
         },
+        ...(googleSiteVerification
+          ? [
+              /** @type {{ tag: "meta"; attrs: Record<string, string> }} */
+              ({ tag: "meta", attrs: { name: "google-site-verification", content: googleSiteVerification } }),
+            ]
+          : []),
       ],
       sidebar: [
         { label: "Start", items: [

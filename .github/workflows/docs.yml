@@ -31,12 +31,18 @@ jobs:
         env:
           PUBLIC_SITE_URL: https://goshikavs.github.io
           PUBLIC_BASE_PATH: /goshikq-agent-framework/
+          PUBLIC_GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
           ASTRO_TELEMETRY_DISABLED: "1"
         run: |
           bun install --frozen-lockfile
           bun run check
           bun run build
           bun scripts/assert_pages_base.mjs
+          if [ -n "${PUBLIC_GOOGLE_SITE_VERIFICATION:-}" ]; then
+            bun scripts/assert_google_verification_meta.mjs
+          else
+            echo "GOOGLE_SITE_VERIFICATION secret empty; homepage omits google-site-verification until the owner sets it"
+          fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/website/dist

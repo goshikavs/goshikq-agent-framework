@@ -175,7 +175,7 @@ D does not detect hidden edges (recall below 1). B covers those node ids by rech
 - Evidence coverage contracts, risk-aware action gates, policies E/F (v0.3.2)
 - CLI: `doctor`, `init --template python|typescript`, `run`, `studio`, `runs list|inspect`, `verify`, `agents list`, `workflows validate|publish|run`
 - Executable workflows: versioned schema, validation, Rust pinned-version execution, Studio React Flow editor, node-level run status
-- Documentation site: VitePress (`docs/site`)
+- Public website: Astro + Starlight (`apps/website`) on GitHub Pages; VitePress (`docs/site`) remains a local/CI documentation build
 - Local SDK packages: Python wheel/sdist `1.0.0rc2`, TypeScript tarball `1.0.0-rc.2` (not published to PyPI/npm; public GitHub native archives are `v1.0.0-rc.2`)
 - OpenAPI at `GET /api/v1/openapi.json`
 - Event batch ingestion `POST /api/v1/events/batch` (idempotent)

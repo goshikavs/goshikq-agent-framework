@@ -3,6 +3,7 @@ import "../styles/marketing.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import { SITE, canonicalUrl, withBase } from "../lib/site";
+import { googleSiteVerificationToken } from "../lib/google-site-verification";
 
 interface Props {
   title: string;
@@ -15,6 +16,7 @@ const origin = Astro.site?.href ?? "http://localhost:4321";
 const canonical = canonicalUrl(path, origin);
 const og = canonicalUrl("/media/studio/goshikq-studio-dashboard.webp", origin);
 const fullTitle = title.includes("Goshikq") ? title : `${title} | Goshikq`;
+const googleSiteVerification = googleSiteVerificationToken();
 ---
 <!doctype html>
 <html lang="en" data-theme="dark">
@@ -24,6 +26,7 @@ const fullTitle = title.includes("Goshikq") ? title : `${title} | Goshikq`;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {googleSiteVerification ? <meta name="google-site-verification" content={googleSiteVerification} /> : null}
     <meta name="robots" content="index,follow" />
     <meta name="theme-color" content="#0c1116" />
     <meta property="og:type" content="website" />
