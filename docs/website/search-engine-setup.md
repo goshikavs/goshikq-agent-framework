@@ -9,7 +9,7 @@ Public host: `https://goshikavs.github.io/goshikq-agent-framework/` (Astro + Sta
 1. Rebuild with `PUBLIC_SITE_URL=https://goshikavs.github.io` and `PUBLIC_BASE_PATH=/goshikq-agent-framework/` (origin only — putting the repo path in `PUBLIC_SITE_URL` drops `/goshikq-agent-framework/` from canonicals).
 2. Confirm `https://goshikavs.github.io/goshikq-agent-framework/sitemap-index.xml` and `/goshikq-agent-framework/robots.txt` return 200.
 3. Google Search Console → URL prefix property for that origin.
-4. HTML-tag verification: put `google-site-verification` in `apps/website/astro.config.mjs` `head` (or a file in `apps/website/public/`). Do not commit a token until Search Console issues one.
+4. HTML-tag verification: set repository secret `GOOGLE_SITE_VERIFICATION` to Google’s exact token. The Docs workflow injects it as `PUBLIC_GOOGLE_SITE_VERIFICATION`; `Marketing.astro` writes the homepage meta tag. Do not invent a token. HTML-file verification must use `apps/website/public/` (Pages base path `/goshikq-agent-framework/`), not the repository root.
 5. Sitemap submission: paste `https://<origin>/sitemap-index.xml`.
 6. URL Inspection → request indexing for `/` and `/docs/`. Requests are not a ranking guarantee.
 7. Bing Webmaster Tools → import from Search Console or add the same prefix and sitemap.

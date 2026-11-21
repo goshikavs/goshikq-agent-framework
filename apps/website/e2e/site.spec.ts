@@ -24,6 +24,7 @@ test.describe("Goshikq website", () => {
     expect(html).toMatch(/Verify Real Outcomes/i);
     expect(html).not.toMatch(/noindex/i);
     expect(html).toMatch(/rel="canonical"/i);
+    expect(html).not.toMatch(/google-site-verification/i);
   });
 
   test("download identifies the GitHub prerelease and unpublished registries", async ({ page }) => {
@@ -81,6 +82,7 @@ test.describe("Goshikq website", () => {
     expect(html).toMatch(/rel="canonical"/i);
     expect(html).not.toMatch(/noindex/i);
     expect(html).not.toMatch(/Alpha software/i);
+    expect(html).not.toMatch(/google-site-verification/i);
     const body = await page.locator("body").innerText();
     expect(body).toMatch(/1\.0\.0-rc\.2/);
     expect(body).toMatch(/Stable v1\.0\.0 is not published/);

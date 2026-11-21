@@ -245,10 +245,12 @@ jobs:
         env:
           PUBLIC_SITE_URL: https://goshikavs.github.io
           PUBLIC_BASE_PATH: /goshikq-agent-framework/
+          PUBLIC_GOOGLE_SITE_VERIFICATION: goshikq-ci-fixture-not-a-google-token
           ASTRO_TELEMETRY_DISABLED: "1"
         run: |
           bun run build
           bun scripts/assert_pages_base.mjs
+          bun scripts/assert_google_verification_meta.mjs
       - name: Build public website
         working-directory: apps/website
         env:

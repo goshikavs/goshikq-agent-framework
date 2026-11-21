@@ -17,16 +17,30 @@ A custom domain is **not** authorized here. Do not change DNS without a separate
 3. HTML contains `<link rel="canonical" …>` under that host and **no** `noindex`.
 4. `robots.txt` contains `Allow: /` and a `Sitemap:` line pointing at the deployed sitemap.
 
-Local preview is not Search Console. Google/Bing verification tokens are still owner-only.
+Local preview is not Search Console. Google/Bing verification tokens are still owner-only. This repository does **not** invent a `google-site-verification` value.
+
+## Why HTML-file verification 404s
+
+GitHub Pages publishes `apps/website/dist` at `https://goshikavs.github.io/goshikq-agent-framework/`. Google’s HTML-file method requests:
+
+`https://goshikavs.github.io/goshikq-agent-framework/<googleNNNN.html>`
+
+A file at the repository root, or at `https://goshikavs.github.io/<googleNNNN.html>` (no repo path), is not in the Pages artifact. Prefer the **HTML tag** method below. If you still use the HTML file, put Google’s exact file in `apps/website/public/` so Astro copies it to that URL.
 
 ## Google Search Console
 
 1. Open https://search.google.com/search-console
 2. Add property → **URL prefix** → `https://goshikavs.github.io/goshikq-agent-framework/`
-3. Verify with **HTML file** or **Google Analytics** only if those are already owned. Preferred for this repo: **DNS** is unavailable without a custom domain. Use **HTML tag** in `apps/website/src/layouts/Marketing.astro` **only after** the owner supplies the exact verification token. Do not invent a token.
-4. After verification, Sitemaps → add `https://goshikavs.github.io/goshikq-agent-framework/sitemap-index.xml`
-5. URL Inspection → test `https://goshikavs.github.io/goshikq-agent-framework/` and `/download/`
-6. Do not request indexing of unpublished or `noindex` URLs
+3. Choose **HTML tag**. Copy the `content` value from Google’s meta tag. Do not invent a token.
+4. Repo **Settings → Secrets and variables → Actions → New repository secret**:
+   - Name: `GOOGLE_SITE_VERIFICATION`
+   - Value: that exact `content` string (no quotes, no `meta` markup)
+5. Merge this change to `main` (or run **Docs** → `workflow_dispatch` after the secret exists). `.github/workflows/docs.yml` passes the secret into `PUBLIC_GOOGLE_SITE_VERIFICATION`, which `apps/website/src/layouts/Marketing.astro` writes into the homepage `<head>`.
+6. View source on https://goshikavs.github.io/goshikq-agent-framework/ and confirm `<meta name="google-site-verification" content="…">` matches Google’s value.
+7. Click **Verify** in Search Console. Do not claim verification until Google says it succeeded.
+8. After Google confirms ownership: Sitemaps → add `https://goshikavs.github.io/goshikq-agent-framework/sitemap-index.xml`
+9. URL Inspection → test `https://goshikavs.github.io/goshikq-agent-framework/` and `/download/`
+10. Do not request indexing of unpublished or `noindex` URLs
 
 GitHub org verification (optional): Search Console also supports a **Domain** property on `github.io`, which Google verifies through GitHub’s documented process. That is an owner Google-account action.
 
@@ -57,6 +71,7 @@ GitHub org verification (optional): Search Console also supports a **Domain** pr
 
 ## What remains owner-only
 
-- Google/Bing account verification tokens (do not invent a `google-site-verification` value)
+- Creating the `GOOGLE_SITE_VERIFICATION` Actions secret with Google’s exact HTML-tag token
+- Clicking **Verify** after the live homepage includes that meta tag
 - Submitting `sitemap-index.xml` and requesting indexing
 - Any custom domain or DNS

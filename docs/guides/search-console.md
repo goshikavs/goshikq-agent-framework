@@ -23,16 +23,11 @@ After the docs workflow has published Pages:
 1. Open [Google Search Console](https://search.google.com/search-console).
 2. Add property → **URL prefix** → `https://goshikavs.github.io/goshikq-agent-framework/`.
 3. Choose **HTML tag** verification.
-4. Copy the `google-site-verification` meta tag content.
-5. Put that value in `apps/website/astro.config.mjs` `starlight.head` (and `apps/website/src/layouts/Marketing.astro` for marketing routes) **only after** Search Console issues the token. Do not invent one.
+4. Copy the `content` value from Google’s meta tag. Do not invent one.
+5. Store that exact string as the GitHub Actions secret `GOOGLE_SITE_VERIFICATION`. `.github/workflows/docs.yml` injects it as `PUBLIC_GOOGLE_SITE_VERIFICATION`. The homepage layout `apps/website/src/layouts/Marketing.astro` emits `<meta name="google-site-verification">` in `<head>` when the variable is non-empty.
+6. Merge to `main` (or re-run the Docs workflow) so GitHub Pages redeploys, confirm the live homepage HTML contains the tag, then click **Verify**.
 
-   ```js
-   { tag: "meta", attrs: { name: "google-site-verification", content: "PASTE_TOKEN_HERE" } }
-   ```
-
-6. Merge to `main` so GitHub Pages redeploys, then click **Verify**.
-
-HTML-file verification also works: place the Google-supplied file in `apps/website/public/` (copied to the site root).
+HTML-file verification also works, but the file must be served under the Pages base path. Place Google’s exact `google*.html` in `apps/website/public/` so it is published at `https://goshikavs.github.io/goshikq-agent-framework/<filename>`. A file at the repository root is not deployed.
 
 Do not commit a verification token until you have generated it in Search Console.
 
