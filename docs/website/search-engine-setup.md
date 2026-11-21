@@ -2,9 +2,9 @@
 
 A sitemap does not force indexing. This page is for the **Astro website**, not a claim that Google has indexed anything.
 
-Intended public host: `https://goshikavs.github.io/goshikq-agent-framework/` (Astro + Starlight via `.github/workflows/docs.yml`). Until `release/v1.0-hardening` is merged to `main` and Pages deploys, that URL may still serve the older VitePress artifact or 404. See [search-console-setup.md](search-console-setup.md) for Google/Bing steps.
+Public host: `https://goshikavs.github.io/goshikq-agent-framework/` (Astro + Starlight via `.github/workflows/docs.yml`). See [search-console-setup.md](search-console-setup.md) for remaining Google/Bing owner steps.
 
-## After a public origin exists
+## After the site is live
 
 1. Rebuild with `PUBLIC_SITE_URL=https://goshikavs.github.io` and `PUBLIC_BASE_PATH=/goshikq-agent-framework/` (origin only — putting the repo path in `PUBLIC_SITE_URL` drops `/goshikq-agent-framework/` from canonicals).
 2. Confirm `https://goshikavs.github.io/goshikq-agent-framework/sitemap-index.xml` and `/goshikq-agent-framework/robots.txt` return 200.

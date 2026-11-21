@@ -22,9 +22,13 @@ Do not purchase a domain, change DNS, or connect production hosting until the ow
 
 Rollback: Cloudflare Pages → Deployments → previous successful deploy → Retry / Rollback.
 
-## GitHub Pages
+## GitHub Pages (current public host)
 
-The existing `docs.yml` workflow still publishes **VitePress** from `docs/site`. This website does not replace that workflow until cutover is approved. Running both on the same hostname would duplicate documentation.
+`.github/workflows/docs.yml` builds `apps/website` and deploys `apps/website/dist` from `main`.
+
+Public URL: https://goshikavs.github.io/goshikq-agent-framework/
+
+VitePress under `docs/site` is a local/CI documentation build. It is not the Pages artifact. Do not run a second VitePress Pages job on the same hostname.
 
 ## Local production build
 

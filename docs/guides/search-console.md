@@ -24,15 +24,15 @@ After the docs workflow has published Pages:
 2. Add property → **URL prefix** → `https://goshikavs.github.io/goshikq-agent-framework/`.
 3. Choose **HTML tag** verification.
 4. Copy the `google-site-verification` meta tag content.
-5. Put that value in `docs/site/.vitepress/config.ts` under `head`, for example:
+5. Put that value in `apps/website/astro.config.mjs` `starlight.head` (and `apps/website/src/layouts/Marketing.astro` for marketing routes) **only after** Search Console issues the token. Do not invent one.
 
-   ```ts
-   ["meta", { name: "google-site-verification", content: "PASTE_TOKEN_HERE" }]
+   ```js
+   { tag: "meta", attrs: { name: "google-site-verification", content: "PASTE_TOKEN_HERE" } }
    ```
 
 6. Merge to `main` so GitHub Pages redeploys, then click **Verify**.
 
-HTML-file verification also works: place the Google-supplied file in `docs/site/.vitepress/public/` (copied to the site root via Vite `publicDir`).
+HTML-file verification also works: place the Google-supplied file in `apps/website/public/` (copied to the site root).
 
 Do not commit a verification token until you have generated it in Search Console.
 
@@ -48,7 +48,7 @@ GitHub’s own `robots.txt` and crawl budget affect `github.com` URLs. A new or 
 ## After verification
 
 1. **URL inspection** → enter `https://goshikavs.github.io/goshikq-agent-framework/` → **Request indexing**.
-2. Submit `https://goshikavs.github.io/goshikq-agent-framework/sitemap.xml` under Sitemaps.
+2. Submit `https://goshikavs.github.io/goshikq-agent-framework/sitemap-index.xml` under Sitemaps.
 3. Repeat inspection for `https://github.com/goshikavs/goshikq-agent-framework/` if that property verifies.
 4. Wait. Recheck with:
 
