@@ -4,7 +4,7 @@ The public site lives in `apps/website`. It is a static Astro 7 + Starlight 0.42
 
 ## Why Astro / Starlight instead of extending VitePress
 
-`docs/site` VitePress remains the **currently deployed** GitHub Pages host (`https://goshikavs.github.io/goshikq-agent-framework/`). Replacing it in production is an owner decision.
+The live GitHub Pages host (`https://goshikavs.github.io/goshikq-agent-framework/`) is this Astro + Starlight app. `docs/site` VitePress remains a local/CI documentation build and is not the production Pages artifact.
 
 Astro is used for the public product website because:
 

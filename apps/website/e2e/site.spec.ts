@@ -24,6 +24,7 @@ test.describe("Goshikq website", () => {
     expect(html).toMatch(/Verify Real Outcomes/i);
     expect(html).not.toMatch(/noindex/i);
     expect(html).toMatch(/rel="canonical"/i);
+    expect(html).not.toMatch(/google-site-verification/i);
   });
 
   test("download identifies the GitHub prerelease and unpublished registries", async ({ page }) => {
@@ -64,6 +65,28 @@ test.describe("Goshikq website", () => {
     await expect(page.getByRole("heading", { name: /Goshikq documentation/i })).toBeVisible();
     await expect(page.locator("body")).toContainText("Getting started");
     await expect(page.getByRole("button", { name: /Search/i }).first()).toBeVisible();
+    const body = await page.locator("body").innerText();
+    expect(body).toMatch(/Astro \+ Starlight/);
+    expect(body).not.toMatch(/currently deployed documentation host/i);
+    expect(body).not.toMatch(/until the public website cutover/i);
+    expect(body).not.toMatch(/Alpha software/i);
+  });
+
+  test("homepage SEO title, description, and prerelease copy", async ({ page }) => {
+    const res = await page.goto("/", { waitUntil: "domcontentloaded" });
+    expect(res?.ok()).toBeTruthy();
+    await expect(page).toHaveTitle(/Goshikq/);
+    const description = await page.locator('meta[name="description"]').getAttribute("content");
+    expect(description).toMatch(/Rust runtime/i);
+    const html = await page.content();
+    expect(html).toMatch(/rel="canonical"/i);
+    expect(html).not.toMatch(/noindex/i);
+    expect(html).not.toMatch(/Alpha software/i);
+    expect(html).not.toMatch(/google-site-verification/i);
+    const body = await page.locator("body").innerText();
+    expect(body).toMatch(/1\.0\.0-rc\.2/);
+    expect(body).toMatch(/Stable v1\.0\.0 is not published/);
+    expect(body).not.toMatch(/v1\.0 is not ready/);
   });
 
   test("documentation search dialog accepts a query", async ({ page }) => {

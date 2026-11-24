@@ -226,6 +226,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Release-status and download-link claims
         run: python3 scripts/assert_rc_versions.py
+      - name: Current public-docs deployment claims
+        run: python3 scripts/assert_public_docs.py
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
@@ -243,10 +245,12 @@ jobs:
         env:
           PUBLIC_SITE_URL: https://goshikavs.github.io
           PUBLIC_BASE_PATH: /goshikq-agent-framework/
+          PUBLIC_GOOGLE_SITE_VERIFICATION: goshikq-ci-fixture-not-a-google-token
           ASTRO_TELEMETRY_DISABLED: "1"
         run: |
           bun run build
           bun scripts/assert_pages_base.mjs
+          bun scripts/assert_google_verification_meta.mjs
       - name: Build public website
         working-directory: apps/website
         env:
@@ -438,6 +442,8 @@ jobs:
           "$HOME/.local/bin/gitleaks" detect --no-git --source . --verbose
       - name: RC version metadata
         run: python scripts/assert_rc_versions.py
+      - name: Current public-docs deployment claims
+        run: python scripts/assert_public_docs.py
       - name: Unused sqlx backends are not reachable
         run: python scripts/assert_unused_sqlx_backends.py
       - name: jsonwebtoken is patched for GHSA-h395-gr6q-cpjc
