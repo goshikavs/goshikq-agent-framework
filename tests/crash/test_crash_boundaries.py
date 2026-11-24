@@ -48,12 +48,28 @@ def free_port() -> int:
         return int(s.getsockname()[1])
 
 
+def _tcp_open(host: str, port: int) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=0.4):
+            return True
+    except OSError:
+        return False
+
+
 def start_server(port: int, crash_at: str | None = None) -> subprocess.Popen:
     binary = find_server()
     if binary is None:
         pytest.skip("goshikq-server binary not found; build with scripts/with-msvc.ps1 cargo ... --bin goshikq-server")
     env = os.environ.copy()
     env["DATABASE_URL"] = DATABASE_URL
+    # Embedded Postgres is a child of goshikq-server. On Windows that child often
+    # keeps listening after the server is killed. A restart must attach to it
+    # instead of launching a second postmaster on the same port.
+    embedded = DATABASE_URL.strip().lower()
+    if embedded in {"embedded", "goshikq-embedded", "axiom-embedded"} or embedded.startswith("embedded:"):
+        pg_port = int(os.environ.get("GOSHIKQ_EMBEDDED_PG_PORT", "55432"))
+        if _tcp_open("127.0.0.1", pg_port):
+            env["DATABASE_URL"] = f"postgres://postgres:goshikq@127.0.0.1:{pg_port}/goshikq"
     env["GOSHIKQ_BIND"] = f"127.0.0.1:{port}"
     env["GOSHIKQ_AUTH_MODE"] = "none"
     env["GOSHIKQ_CAPTURE_MODEL_IO"] = "full"
@@ -63,13 +79,17 @@ def start_server(port: int, crash_at: str | None = None) -> subprocess.Popen:
         env["GOSHIKQ_CRASH_AT"] = crash_at
     else:
         env.pop("GOSHIKQ_CRASH_AT", None)
-    kwargs: dict = {"env": env, "cwd": str(ROOT), "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+    log_dir = ROOT / "target" / "test-logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / f"crash-{port}.log"
+    log_file = open(log_path, "w", encoding="utf-8")
+    kwargs: dict = {"env": env, "cwd": str(ROOT), "stdout": log_file, "stderr": subprocess.STDOUT}
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
     return subprocess.Popen([str(binary)], **kwargs)
 
 
-async def wait_ready(url: str, timeout: float = 30.0) -> None:
+async def wait_ready(url: str, timeout: float = 90.0) -> None:
     deadline = time.monotonic() + timeout
     async with httpx.AsyncClient() as client:
         while time.monotonic() < deadline:
@@ -94,7 +114,10 @@ async def wait_exit(proc: subprocess.Popen, timeout: float = 60.0) -> int:
 
 
 def postgres_up() -> bool:
-    if DATABASE_URL in ("embedded", ""):
+    url = DATABASE_URL.strip().lower()
+    if url in {"embedded", "goshikq-embedded", "axiom-embedded"} or url.startswith("embedded:"):
+        return find_server() is not None
+    if DATABASE_URL in ("",):
         return False
     try:
         import urllib.parse

@@ -1004,9 +1004,7 @@ impl RunExecutor {
         self.emit(ev).await;
         if policy == "none" {
             let _ = self
-                .rt
-                .db
-                .set_run_verification(self.run_id, VerificationStatus::NotEvaluated)
+                .record_verification(VerificationStatus::NotEvaluated)
                 .await;
             let ev = self
                 .event(EventType::VerificationInconclusive)
@@ -1032,11 +1030,7 @@ impl RunExecutor {
         let actual = pointer_get(context, path).cloned().unwrap_or(Value::Null);
         let ok = actual == expected;
         if ok {
-            let _ = self
-                .rt
-                .db
-                .set_run_verification(self.run_id, VerificationStatus::Verified)
-                .await;
+            self.goal_verified = true;
             let ev = self
                 .event(EventType::VerificationPassed)
                 .with_status(EventStatus::Passed)
@@ -1050,9 +1044,7 @@ impl RunExecutor {
             Ok(json!({"verified": true, "path": path, "actual": actual}))
         } else {
             let _ = self
-                .rt
-                .db
-                .set_run_verification(self.run_id, VerificationStatus::Failed)
+                .record_verification(VerificationStatus::Failed)
                 .await;
             let ev = self
                 .event(EventType::VerificationFailed)

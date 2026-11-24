@@ -104,6 +104,9 @@ pub struct RunExecutor {
     pub(crate) agent_version_id: Option<Uuid>,
     pub(crate) workflow_id: Option<Uuid>,
     pub(crate) checkpoint_incompatible: Option<String>,
+    /// Set only after a goal predicate or workflow verify node accepts authoritative state.
+    /// `RunEnd::Completed` must not stamp `VERIFIED` unless this is true.
+    pub(crate) goal_verified: bool,
 }
 
 impl RunExecutor {
@@ -172,6 +175,7 @@ impl RunExecutor {
             agent_version_id: run.agent_version_id,
             workflow_id: run.workflow_id,
             checkpoint_incompatible: None,
+            goal_verified: false,
             limits,
             req,
         }
@@ -223,24 +227,64 @@ impl RunExecutor {
         reason: Option<&str>,
         events: Vec<ExecutionEvent>,
     ) -> bool {
+        self.transition_with(to, reason, events, None).await
+    }
+
+    /// Persist a transition. When `verification` is set, the same row update writes it,
+    /// so a fenced lease cannot leave `verification_status = VERIFIED` behind.
+    pub(crate) async fn transition_with(
+        &mut self,
+        to: RunStatus,
+        reason: Option<&str>,
+        events: Vec<ExecutionEvent>,
+        verification: Option<VerificationStatus>,
+    ) -> bool {
         if let Err(e) = validate_transition(self.status, to) {
             tracing::error!(run_id = %self.run_id, error = %e, "illegal transition requested by executor");
             return false;
         }
-        if self.status == to && events.is_empty() {
+        if self.status == to && events.is_empty() && verification.is_none() {
             return true;
         }
         let persist = if self.lease_generation != 0 {
+            if let Some(verification) = verification {
+                self.rt
+                    .db
+                    .transition_run_leased_with_verification(
+                        self.project_id,
+                        self.run_id,
+                        to,
+                        reason,
+                        events,
+                        &self.lease_owner,
+                        self.lease_generation,
+                        verification,
+                    )
+                    .await
+            } else {
+                self.rt
+                    .db
+                    .transition_run_leased(
+                        self.project_id,
+                        self.run_id,
+                        to,
+                        reason,
+                        events,
+                        &self.lease_owner,
+                        self.lease_generation,
+                    )
+                    .await
+            }
+        } else if let Some(verification) = verification {
             self.rt
                 .db
-                .transition_run_leased(
+                .transition_run_with_verification(
                     self.project_id,
                     self.run_id,
                     to,
                     reason,
                     events,
-                    &self.lease_owner,
-                    self.lease_generation,
+                    verification,
                 )
                 .await
         } else {
@@ -263,6 +307,39 @@ impl RunExecutor {
                 } else {
                     tracing::error!(run_id = %self.run_id, error = %e, "failed to persist transition");
                 }
+                false
+            }
+        }
+    }
+
+    /// Persist verification only while this executor still owns the lease.
+    /// A stale generation cancels the executor and leaves the column unchanged.
+    pub(crate) async fn record_verification(&self, status: VerificationStatus) -> bool {
+        let result = if self.lease_generation != 0 {
+            self.rt
+                .db
+                .set_run_verification_leased(
+                    self.run_id,
+                    status,
+                    &self.lease_owner,
+                    self.lease_generation,
+                )
+                .await
+        } else {
+            self.rt
+                .db
+                .set_run_verification(self.run_id, status)
+                .await
+        };
+        match result {
+            Ok(()) => true,
+            Err(StorageError::Conflict(msg)) => {
+                tracing::error!(run_id = %self.run_id, error = %msg, "verification write rejected; lease fenced");
+                self.handle.cancel.cancel();
+                false
+            }
+            Err(err) => {
+                tracing::error!(run_id = %self.run_id, error = %err, "verification write failed");
                 false
             }
         }
@@ -389,14 +466,29 @@ impl RunExecutor {
         self.step = 0;
         match end {
             RunEnd::Completed => {
-                let _ = self
-                    .rt
-                    .db
-                    .set_run_verification(self.run_id, VerificationStatus::Verified)
+                let verified = self.goal_verified;
+                let outcome = if verified { "VERIFIED" } else { "COMPLETED_UNVERIFIED" };
+                let ev = self
+                    .event(EventType::RunCompleted)
+                    .with_status(if verified {
+                        EventStatus::Succeeded
+                    } else {
+                        EventStatus::Unverified
+                    })
+                    .with_duration(duration)
+                    .with_payload(json!({
+                        "outcome": outcome,
+                        "goal_verified": verified,
+                        "final_output": self.capture_text(&self.final_output),
+                        "summary": summary
+                    }));
+                let verification = if verified {
+                    Some(VerificationStatus::Verified)
+                } else {
+                    None
+                };
+                self.transition_with(RunStatus::Completed, None, vec![ev], verification)
                     .await;
-                let ev = self.event(EventType::RunCompleted).with_status(EventStatus::Succeeded).with_duration(duration)
-                    .with_payload(json!({"outcome": "VERIFIED", "final_output": self.capture_text(&self.final_output), "summary": summary}));
-                self.transition(RunStatus::Completed, None, vec![ev]).await;
             }
             RunEnd::Unverified(reason) => {
                 let ev = self.event(EventType::RunCompleted).with_status(EventStatus::Unverified).with_duration(duration)
@@ -697,9 +789,7 @@ impl RunExecutor {
                             continue;
                         }
                         let _ = self
-                            .rt
-                            .db
-                            .set_run_verification(self.run_id, VerificationStatus::Failed)
+                            .record_verification(VerificationStatus::Failed)
                             .await;
                         Err(RunEnd::Failed(format!("goal not satisfied: {reason}")))
                     }
@@ -1346,9 +1436,7 @@ impl RunExecutor {
                     "GOAL_VERIFICATION_INCONCLUSIVE: the run deadline elapsed while waiting for external settlement; the original write was not re-dispatched"
                 };
                 let _ = self
-                    .rt
-                    .db
-                    .set_run_verification(self.run_id, VerificationStatus::Inconclusive)
+                    .record_verification(VerificationStatus::Inconclusive)
                     .await;
                 if let Some(inv) = self.pending_invocation_id {
                     // Keep historical dispatch (ACCEPTED / OUTCOME_PENDING). Settlement is unresolved.
@@ -2634,9 +2722,7 @@ impl RunExecutor {
                     .with_payload(json!({"subject": "goal", "phase": phase, "reason": msg}));
                 self.emit(ev).await;
                 let _ = self
-                    .rt
-                    .db
-                    .set_run_verification(self.run_id, VerificationStatus::Inconclusive)
+                    .record_verification(VerificationStatus::Inconclusive)
                     .await;
                 return Ok(GoalOutcome::NotEvaluated(format!(
                     "verification inconclusive: {msg}"
@@ -2706,11 +2792,7 @@ impl RunExecutor {
                 .with_duration(dur)
                 .with_payload(json!({"subject": "goal", "phase": phase, "reason": reason}));
             self.emit(ev).await;
-            let _ = self
-                .rt
-                .db
-                .set_run_verification(self.run_id, VerificationStatus::Failed)
-                .await;
+            let _ = self.record_verification(VerificationStatus::Failed).await;
             return Ok(GoalOutcome::InvariantViolated(reason));
         }
         if !evaluate_success {
@@ -2743,11 +2825,7 @@ impl RunExecutor {
                 self.emit(ev).await;
                 let ev = self.event(EventType::GoalSatisfied).with_status(EventStatus::Succeeded).with_payload(json!({"phase": phase, "predicate": self.req.goal.success_predicate, "state_version": snapshot.version}));
                 self.emit(ev).await;
-                let _ = self
-                    .rt
-                    .db
-                    .set_run_verification(self.run_id, VerificationStatus::Verified)
-                    .await;
+                self.goal_verified = true;
                 Ok(GoalOutcome::Verified)
             }
             Some(false) => {
@@ -2782,11 +2860,7 @@ impl RunExecutor {
                         .await;
                     let ev = self.event(EventType::VerificationFailed).with_status(EventStatus::Failed).with_duration(dur).with_payload(json!({"subject": "goal", "phase": phase, "reason": reason, "evidence": self.capture(&result.evidence)}));
                     self.emit(ev).await;
-                    let _ = self
-                        .rt
-                        .db
-                        .set_run_verification(self.run_id, VerificationStatus::Failed)
-                        .await;
+                    let _ = self.record_verification(VerificationStatus::Failed).await;
                 }
                 Ok(GoalOutcome::NotSatisfied(reason))
             }
@@ -2821,9 +2895,7 @@ impl RunExecutor {
                     .with_payload(json!({"subject": "goal", "phase": phase, "reason": reason}));
                 self.emit(ev).await;
                 let _ = self
-                    .rt
-                    .db
-                    .set_run_verification(self.run_id, VerificationStatus::Inconclusive)
+                    .record_verification(VerificationStatus::Inconclusive)
                     .await;
                 Ok(GoalOutcome::NotEvaluated(reason))
             }

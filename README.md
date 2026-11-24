@@ -113,6 +113,26 @@ OTLP/HTTP (protobuf and JSON) ingestion is available. MCP tools are wrapped with
 
 - Rust (`rustup`), Python 3.11+, Bun, optional Docker
 
+## Install the public prerelease
+
+Stable v1.0.0 is not published. These commands install the current public prerelease, `v1.0.0-rc.2`, from GitHub Releases. The script picks the archive for the OS and CPU, checks `SHA256SUMS`, and extracts under the user profile. It does not need an administrator account. Unsupported CPU architectures stop with an error.
+
+Manual alternative: download the archive and `SHA256SUMS` from [the v1.0.0-rc.2 release](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2), compare the checksum, and unzip it yourself.
+
+Windows PowerShell, from a clone:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0-rc.2
+```
+
+macOS and Linux, from a clone:
+
+```bash
+sh scripts/install.sh --version v1.0.0-rc.2
+```
+
+The installer puts `goshikq` and `goshikq-server` on a user bin directory and prints the PATH line. It does not install the Python SDK. The SDK is not on PyPI; install it from this repository with `python -m pip install -e sdk/python`.
+
 ## Quickstart (no paid API keys)
 
 From the repository root:
