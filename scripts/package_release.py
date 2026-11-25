@@ -16,7 +16,7 @@ LICENSE = ROOT / "LICENSE"
 
 INSTALL_TEMPLATE = """# Goshikq {version} ({platform})
 
-This archive is a **release candidate**. It is not a stable v1.0 publication.
+This archive is version **{version}**. It is not a GitHub Release until the owner publishes that tag.
 
 - Source commit: `{commit}`
 - Built with `cargo build --release` (not debug)

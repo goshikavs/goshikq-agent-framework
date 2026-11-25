@@ -10,7 +10,7 @@ Documentation: Starlight under `/docs/**` (installation, architecture, verificat
 
 ## Claims policy
 
-- Tree version `1.0.0-rc.2` (Python `1.0.0rc2`). GitHub **prerelease** only.
+- Tree package version `1.0.0` (Python `1.0.0`). Public GitHub **prerelease** remains `v1.0.0-rc.2`. Stable `v1.0.0` is not tagged.
 - No PyPI, npm, or crates.io packages. No stable `v1.0.0` tag.
 - No SOC 2 / HIPAA / PCI.
 - Studio Tools/Goals/Evaluations/Regression/Benchmarks remain planned.
