@@ -78,7 +78,21 @@ def _wait_http(url: str, proc: subprocess.Popen, timeout: float = 90) -> None:
     raise TimeoutError(f"server not ready at {url}\n{tail}")
 
 
-def _psql(pg_dir: Path, pg_port: int, sql: str) -> str:
+def _sql(database_url: str, pg_dir: Path, pg_port: int, sql: str) -> str:
+    """Run one statement. A postgres URL uses psycopg so CI does not download PostgreSQL."""
+    if database_url.startswith("postgres"):
+        psycopg = pytest.importorskip("psycopg")
+        with psycopg.connect(database_url, connect_timeout=10) as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql)
+                if cur.description is None:
+                    conn.commit()
+                    return ""
+                row = cur.fetchone()
+                conn.commit()
+        if row is None:
+            raise AssertionError(f"no row for {sql}")
+        return "|".join("" if value is None else str(value) for value in row)
     names = ["psql.exe", "psql"] if os.name == "nt" else ["psql"]
     binary = None
     for name in names:
@@ -103,11 +117,12 @@ def _psql(pg_dir: Path, pg_port: int, sql: str) -> str:
     return proc.stdout.strip()
 
 
-def _row(pg_dir: Path, pg_port: int, run_id: str) -> dict[str, str]:
-    raw = _psql(
+def _row(database_url: str, pg_dir: Path, pg_port: int, run_id: str) -> dict[str, str]:
+    raw = _sql(
+        database_url,
         pg_dir,
         pg_port,
-        "SELECT status || '|' || verification_status || '|' || lease_generation::text || '|' || COALESCE(lease_owner,'') "
+        "SELECT status, verification_status, lease_generation::text, COALESCE(lease_owner,'') "
         f"FROM runs WHERE id = '{run_id}'",
     )
     status, verification, generation, owner = raw.split("|", 3)
@@ -130,7 +145,10 @@ async def _race(winner_verifies: bool, tmp_path: Path) -> None:
         pytest.skip("goshikq-server binary not found")
     http_a = _free_port()
     http_b = _free_port()
-    pg_port = _free_port()
+    external = os.environ.get("DATABASE_URL", "")
+    use_service = external.startswith("postgres://") or external.startswith("postgresql://")
+    pg_port = 5432 if use_service else _free_port()
+    sql_url = external if use_service else "embedded"
     pg_dir = ROOT / "target" / "test-pg" / f"lease-{pg_port}"
     shared = ROOT / "target" / "test-pg" / "shared" / "install"
     if shared.exists() and not (pg_dir / "install").exists():
@@ -154,7 +172,7 @@ async def _race(winner_verifies: bool, tmp_path: Path) -> None:
     env_a = os.environ.copy()
     env_a.update(
         {
-            "DATABASE_URL": "embedded",
+            "DATABASE_URL": external if use_service else "embedded",
             "GOSHIKQ_BIND": f"127.0.0.1:{http_a}",
             "GOSHIKQ_AUTH_MODE": "none",
             "GOSHIKQ_EMBEDDED_PG_PORT": str(pg_port),
@@ -197,9 +215,10 @@ async def _race(winner_verifies: bool, tmp_path: Path) -> None:
         while time.monotonic() < deadline and not paused.exists():
             await asyncio.sleep(0.05)
         assert paused.exists(), "executor did not pause before the terminal write"
-        before = _row(pg_dir, pg_port, run_id)
+        before = _row(sql_url, pg_dir, pg_port, run_id)
         assert before["verification_status"] != "VERIFIED"
-        _psql(
+        _sql(
+            sql_url,
             pg_dir,
             pg_port,
             f"UPDATE runs SET lease_expires_at = now() - interval '5 seconds' WHERE id = '{run_id}'",
@@ -210,7 +229,7 @@ async def _race(winner_verifies: bool, tmp_path: Path) -> None:
         env_b = os.environ.copy()
         env_b.update(
             {
-                "DATABASE_URL": f"postgres://postgres:goshikq@127.0.0.1:{pg_port}/goshikq",
+                "DATABASE_URL": external if use_service else f"postgres://postgres:goshikq@127.0.0.1:{pg_port}/goshikq",
                 "GOSHIKQ_BIND": f"127.0.0.1:{http_b}",
                 "GOSHIKQ_AUTH_MODE": "none",
                 "GOSHIKQ_LEASE_TTL_SECS": "30",
@@ -233,9 +252,9 @@ async def _race(winner_verifies: bool, tmp_path: Path) -> None:
         except TimeoutError:
             tail_a = Path(proc_a._log).read_text(encoding="utf-8", errors="replace")[-1500:]  # type: ignore[attr-defined]
             tail_b = Path(proc_b._log).read_text(encoding="utf-8", errors="replace")[-1500:] if proc_b else ""  # type: ignore[attr-defined]
-            row = _row(pg_dir, pg_port, run_id)
+            row = _row(sql_url, pg_dir, pg_port, run_id)
             raise AssertionError(f"worker A did not finish\nrow={row}\nA={tail_a}\nB={tail_b}")
-        after = _row(pg_dir, pg_port, run_id)
+        after = _row(sql_url, pg_dir, pg_port, run_id)
         assert int(after["lease_generation"]) > int(before["lease_generation"])
         assert after["lease_owner"] != before["lease_owner"]
         assert after["status"] in {"COMPLETED", "UNVERIFIED", "FAILED"}
@@ -271,7 +290,7 @@ async def _race(winner_verifies: bool, tmp_path: Path) -> None:
                 replay = (await client.get(f"{url_c}/api/v1/runs/{run_id}")).json()
             assert replay["status"] == after["status"]
             assert replay["verification_status"] == after["verification_status"]
-            replay_row = _row(pg_dir, pg_port, run_id)
+            replay_row = _row(sql_url, pg_dir, pg_port, run_id)
             assert replay_row["verification_status"] == after["verification_status"]
             assert replay_row["status"] == after["status"]
         finally:
