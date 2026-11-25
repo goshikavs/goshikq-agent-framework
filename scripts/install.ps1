@@ -11,6 +11,28 @@ param(
 $ErrorActionPreference = "Stop"
 $repo = "goshikavs/goshikq-agent-framework"
 
+function Resolve-GoshikqPlatform([string]$Arch) {
+    switch ($Arch) {
+        "X64" { return "windows-amd64" }
+        "Arm64" { return "windows-arm64" }
+        default { throw "Unsupported Windows architecture '$Arch'. Supported: X64, Arm64 (experimental)." }
+    }
+}
+
+function Test-GoshikqSha256([string]$Path, [string]$Expected) {
+    $actual = (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+    $want = $Expected.ToLowerInvariant()
+    if ($actual -ne $want) {
+        throw "SHA256 mismatch for ${Path}: expected $want actual $actual"
+    }
+    return $actual
+}
+
+# Dot-sourcing loads Test-GoshikqSha256 for tests and does not download a release.
+if ($MyInvocation.InvocationName -eq '.') {
+    return
+}
+
 function Fail([string]$Message) {
     Write-Error $Message
     exit 1
@@ -21,11 +43,12 @@ $os = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
 if ($os -notmatch "Windows") {
     Fail "install.ps1 is for Windows. On macOS or Linux run scripts/install.sh."
 }
-switch ($arch) {
-    "X64" { $platform = "windows-amd64"; $ext = "zip" }
-    "Arm64" { $platform = "windows-arm64"; $ext = "zip" }
-    default { Fail "Unsupported Windows architecture '$arch'. Supported: X64, Arm64 (experimental)." }
+try {
+    $platform = Resolve-GoshikqPlatform $arch
+} catch {
+    Fail $_.Exception.Message
 }
+$ext = "zip"
 if ($platform -eq "windows-arm64") {
     Write-Warning "Windows ARM64 is experimental and is not a supported v1.0 platform."
 }
@@ -48,10 +71,11 @@ try {
 
     $line = Get-Content $sumsPath | Where-Object { $_ -match [regex]::Escape($asset) } | Select-Object -First 1
     if (-not $line) { Fail "SHA256SUMS has no entry for $asset" }
-    $expected = ($line -split "\s+")[0].ToLowerInvariant()
-    $actual = (Get-FileHash -Algorithm SHA256 -Path $archivePath).Hash.ToLowerInvariant()
-    if ($actual -ne $expected) {
-        Fail "SHA256 mismatch for ${asset}: expected $expected actual $actual"
+    $expected = ($line -split "\s+")[0]
+    try {
+        $actual = Test-GoshikqSha256 -Path $archivePath -Expected $expected
+    } catch {
+        Fail $_.Exception.Message
     }
     Write-Host "SHA256 ok $actual"
 

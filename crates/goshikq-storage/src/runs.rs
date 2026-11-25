@@ -482,6 +482,35 @@ impl Db {
         Ok(())
     }
 
+    /// Writes `final_output` only while this lease generation still owns the run.
+    pub async fn set_final_output_leased(
+        &self,
+        run_id: Uuid,
+        output: Option<&str>,
+        owner: &str,
+        generation: i64,
+    ) -> DbResult<()> {
+        let result = sqlx::query(
+            r#"UPDATE runs SET final_output = $2, updated_at = now()
+               WHERE id = $1
+                 AND lease_owner = $3
+                 AND lease_generation = $4
+                 AND (lease_expires_at IS NULL OR lease_expires_at > now())"#,
+        )
+        .bind(run_id)
+        .bind(output)
+        .bind(owner)
+        .bind(generation)
+        .execute(&self.pool)
+        .await?;
+        if result.rows_affected() == 0 {
+            return Err(StorageError::Conflict(format!(
+                "run {run_id} final_output update rejected (fenced lease)"
+            )));
+        }
+        Ok(())
+    }
+
     /// Roll up token usage and estimated cost from `model_usage` / `cost_records`.
     /// `usage_known` is true only if every model call reported usage; `cost_known` only
     /// if every call was priced. Unknown is never rendered as zero.

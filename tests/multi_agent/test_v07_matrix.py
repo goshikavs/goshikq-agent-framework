@@ -115,6 +115,8 @@ def test_02_child_completion_does_not_verify_parent(server: str):
         assert prow["verification_status"] == "NOT_EVALUATED"
         assert crow["verification_status"] == "NOT_EVALUATED"
         assert prow["status"] == "CREATED"
+        assert prow["status"] != "COMPLETED"
+        assert prow["verification_status"] != "VERIFIED"
 
 
 def test_03_parallel_child_tasks(server: str):

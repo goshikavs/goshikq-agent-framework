@@ -444,6 +444,21 @@ impl RunExecutor {
     }
 
     async fn finish(&mut self, end: RunEnd) {
+        crate::crash::pause_before_terminal_write(self.run_id).await;
+        if self.lease_generation != 0 {
+            match self
+                .rt
+                .db
+                .lease_is_valid(self.run_id, &self.lease_owner, self.lease_generation)
+                .await
+            {
+                Ok(true) => {}
+                _ => {
+                    tracing::error!(run_id = %self.run_id, "finish aborted; lease fenced before terminal write");
+                    return;
+                }
+            }
+        }
         let duration = self.elapsed_ms();
         let summary = json!({"steps": self.step, "replans": self.replans, "duration_ms": duration, "total_tokens": self.total_tokens});
         if let Err(e) = self
@@ -454,11 +469,28 @@ impl RunExecutor {
         {
             tracing::error!(error = %e, "set_step_count");
         }
-        let _ = self
-            .rt
-            .db
-            .set_final_output(self.run_id, self.final_output.as_deref())
-            .await;
+        let final_output = if self.lease_generation != 0 {
+            self.rt
+                .db
+                .set_final_output_leased(
+                    self.run_id,
+                    self.final_output.as_deref(),
+                    &self.lease_owner,
+                    self.lease_generation,
+                )
+                .await
+        } else {
+            self.rt
+                .db
+                .set_final_output(self.run_id, self.final_output.as_deref())
+                .await
+        };
+        if let Err(err) = final_output {
+            tracing::error!(run_id = %self.run_id, error = %err, "final_output not written; lease fenced");
+            if matches!(err, StorageError::Conflict(_)) {
+                return;
+            }
+        }
         self.step_span.clear();
         self.step = 0;
         match end {

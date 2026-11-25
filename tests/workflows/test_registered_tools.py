@@ -153,3 +153,4 @@ def test_spawned_agent_without_worker_is_unavailable():
         final = wait_status(c, run_id, {"FAILED", "TIMED_OUT", "COMPLETED"})
         assert final["status"] == "FAILED", final
         assert "WORKER_UNAVAILABLE" in (final.get("failure_reason") or "")
+        assert final.get("verification_status") != "VERIFIED"

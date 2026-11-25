@@ -437,6 +437,53 @@ def test_19_workflow_completes_without_verified_goal(runtime_url: str) -> None:
         assert last.get("verification_status") != "VERIFIED"
 
 
+def test_19b_failed_verify_node_is_not_verified(runtime_url: str) -> None:
+    definition = {
+        "name": _name("verify_fail"),
+        "version": 1,
+        "goal": {
+            "description": "approved flag",
+            "verification_policy": "json_predicate",
+            "path": "/approved",
+            "equals": True,
+            "required": True,
+        },
+        "nodes": [
+            {"id": "start", "kind": "start", "label": "s", "config": {}},
+            {
+                "id": "verify",
+                "kind": "verify",
+                "label": "v",
+                "config": {"verification_policy": "json_predicate", "path": "/approved", "equals": True},
+            },
+            {"id": "end", "kind": "end", "label": "e", "config": {}},
+        ],
+        "edges": [
+            {"id": "e1", "source": "start", "target": "verify"},
+            {"id": "e2", "source": "verify", "target": "end"},
+        ],
+        "max_steps": 8,
+    }
+    with httpx.Client(base_url=runtime_url, timeout=30) as c:
+        created = c.post("/api/v1/workflows", json={"definition": definition, "draft": True})
+        assert created.status_code in (200, 201), created.text
+        wf_id = created.json()["id"]
+        published = c.post(f"/api/v1/workflows/{wf_id}/publish")
+        assert published.status_code == 200, published.text
+        started = c.post(f"/api/v1/workflows/{wf_id}/run", json={"input": {}})
+        assert started.status_code in (200, 201), started.text
+        run_id = started.json()["run_id"]
+        deadline = time.monotonic() + 60
+        last = {}
+        while time.monotonic() < deadline:
+            last = c.get(f"/api/v1/runs/{run_id}").json()
+            if last.get("status") in {"COMPLETED", "FAILED", "UNVERIFIED", "TIMED_OUT"}:
+                break
+            time.sleep(0.2)
+        assert last.get("status") in {"COMPLETED", "FAILED", "UNVERIFIED"}, last
+        assert last.get("verification_status") != "VERIFIED"
+
+
 def test_20_untrusted_success_claim_is_not_verified(runtime_url: str) -> None:
     asyncio.run(_untrusted(runtime_url))
 
