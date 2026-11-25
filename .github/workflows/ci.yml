@@ -299,7 +299,7 @@ jobs:
       - name: Python deps
         run: |
           python -m pip install -e "sdk/python[dev]"
-          python -m pip install httpx cryptography pytest
+          python -m pip install httpx cryptography pytest "psycopg[binary]"
       - name: Start goshikq-server
         run: |
           ./target/debug/goshikq-server &

@@ -47,16 +47,30 @@ test.describe("Goshikq website", () => {
   });
 
   test("published RC download links resolve", async ({ request, page }) => {
+    test.setTimeout(90_000);
     await page.goto("/download/");
     const hrefs = await page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]').evaluateAll((els) =>
       els.map((el) => (el as HTMLAnchorElement).href),
     );
     expect(hrefs.length).toBeGreaterThan(5);
     expect(hrefs.every((h) => h.includes("v1.0.0-rc.2"))).toBeTruthy();
-    const sums = await request.get(`${ASSETS}/SHA256SUMS`);
-    expect(sums.ok()).toBeTruthy();
-    const body = await sums.text();
-    expect(body).toMatch(/goshikq-1\.0\.0-rc\.2-linux-amd64\.tar\.gz/);
+    let body = "";
+    let last = "no response";
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const sums = await request.get(`${ASSETS}/SHA256SUMS`, { timeout: 20_000 });
+        if (sums.ok()) {
+          body = await sums.text();
+          break;
+        }
+        last = `HTTP ${sums.status()}`;
+      } catch (err) {
+        last = String(err);
+      }
+    }
+    expect(body, `published SHA256SUMS was not readable: ${last}`).toMatch(
+      /goshikq-1\.0\.0-rc\.2-linux-amd64\.tar\.gz/,
+    );
     expect(body).toMatch(/goshikq-1\.0\.0-rc\.2-windows-arm64\.zip/);
   });
 

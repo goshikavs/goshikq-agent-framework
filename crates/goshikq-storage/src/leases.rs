@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, Utc};
 use uuid::Uuid;
 
 use crate::{Db, DbResult, RunRow, StorageError};
@@ -95,16 +95,19 @@ impl Db {
         owner: &str,
         generation: i64,
     ) -> DbResult<bool> {
-        let row: Option<(i64, DateTime<Utc>, Option<String>)> = sqlx::query_as(
-            "SELECT lease_generation, COALESCE(lease_expires_at, '-infinity'::timestamptz), lease_owner FROM runs WHERE id = $1",
+        let row: Option<(bool,)> = sqlx::query_as(
+            r#"SELECT lease_generation = $2
+                  AND lease_owner = $3
+                  AND lease_expires_at IS NOT NULL
+                  AND lease_expires_at > now()
+               FROM runs WHERE id = $1"#,
         )
         .bind(run_id)
+        .bind(generation)
+        .bind(owner)
         .fetch_optional(&self.pool)
         .await?;
-        Ok(match row {
-            Some((g, exp, Some(o))) => g == generation && o == owner && exp > Utc::now(),
-            _ => false,
-        })
+        Ok(matches!(row, Some((true,))))
     }
 
     pub async fn list_recoverable_runs(&self) -> DbResult<Vec<RunRow>> {

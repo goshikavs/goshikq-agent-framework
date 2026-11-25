@@ -249,9 +249,13 @@ def main() -> int:
             if status in {"COMPLETED", "FAILED", "UNVERIFIED", "TIMED_OUT"}:
                 break
             time.sleep(0.2)
-        print("workflow status:", status, "run_id:", run_id)
+        print("workflow status:", status, "verification:", run.get("verification_status"), "run_id:", run_id)
         if status != "COMPLETED":
             raise SystemExit(f"durable workflow did not complete: {status}")
+        if run.get("verification_status") == "VERIFIED":
+            raise SystemExit(
+                "echo workflow has no goal proof but verification_status is VERIFIED"
+            )
 
         stop(proc)
         print("graceful shutdown exit", proc.returncode)

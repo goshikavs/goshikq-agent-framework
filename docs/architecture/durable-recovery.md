@@ -29,7 +29,7 @@ On `goshikq-server` start:
 4. The executor reconstructs the checkpoint and applies the journal policy in [`recovery.rs`](https://github.com/goshikavs/goshikq-agent-framework/blob/main/crates/goshikq-core/src/recovery.rs).
 5. Automatic resume of non-wait recoveries stops after `GOSHIKQ_MAX_RECOVERY_ATTEMPTS` (default 8) successful `resumed` attempts; durable waits are not counted against that budget.
 
-Two workers cannot commit as the same owner: heartbeats and fenced `transition_run_leased` reject a stale generation. A lease does **not** stop an already-running old process from having sent an HTTP request; the action journal is the additional safeguard.
+Two workers cannot commit as the same owner: heartbeats and fenced `transition_run_leased` reject a stale generation. Completing a run as `VERIFIED` is the same fenced update (`transition_run_leased_with_verification`), so a stale generation cannot leave `verification_status=VERIFIED` behind after its status write is rejected. A lease does **not** stop an already-running old process from having sent an HTTP request; the action journal is the additional safeguard. When the external API has no idempotency key, a lost acknowledgement after a successful write still needs operator reconciliation. That is not exactly-once.
 
 ## Compatibility
 

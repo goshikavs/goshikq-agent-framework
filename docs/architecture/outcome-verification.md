@@ -10,7 +10,13 @@ Goshikq splits five independent fields. Do not treat any one as a proxy for anot
 | Goal satisfaction | Success predicate on snapshot | `false` until `order.status=refunded` and `refund.status=settled` |
 | Goal verification status | Verifier / predicate result | `INCONCLUSIVE` while waiting; `VERIFIED` only after settlement |
 
-`COMPLETED` is only written when the success predicate is true against a `StateProvider` snapshot. A tool HTTP 200 / `accepted: true` is not sufficient.
+An agent loop writes `COMPLETED` together with `verification_status=VERIFIED` only when the success predicate is true against a `StateProvider` snapshot, in the same lease-fenced row update. A tool HTTP 200 / `accepted: true`, a model claim, or a tool result that says to mark the goal verified is not sufficient.
+
+A workflow graph can reach `COMPLETED` without `VERIFIED` when it has no verify node that accepted authoritative state (`verification_policy=none` stays `NOT_EVALUATED`). `result.verified` in the SDKs is true only when status is `COMPLETED` and verification is `VERIFIED`.
+
+`VERIFIED` is a point-in-time record. A later change in the external system does not rewrite that row. A new run has to observe the new state. Evidence freshness is the snapshot version and `observed_at` captured for that decision, not a promise that the outside world stays there.
+
+A stale lease holder cannot stamp `VERIFIED`. The completion update checks `lease_owner`, `lease_generation`, and `lease_expires_at`. Other verification writes from the executor use the same lease check and are rejected after a steal.
 
 Current business-operation status is projected from `tool_invocations.business_operation_status` (updated as the journal observes settlement). Past `action-verify` events are not rewritten if they still say `accepted`.
 

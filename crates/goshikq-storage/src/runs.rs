@@ -299,8 +299,31 @@ impl Db {
         failure_reason: Option<&str>,
         events: Vec<ExecutionEvent>,
     ) -> DbResult<Vec<ExecutionEvent>> {
-        self.transition_run_inner(project_id, run_id, to, failure_reason, events, None)
+        self.transition_run_inner(project_id, run_id, to, failure_reason, events, None, None)
             .await
+    }
+
+    /// Status transition and verification column in one update. Used when the executor
+    /// has not claimed a lease (generation 0). Leased callers use the fenced variant.
+    pub async fn transition_run_with_verification(
+        &self,
+        project_id: Uuid,
+        run_id: Uuid,
+        to: RunStatus,
+        failure_reason: Option<&str>,
+        events: Vec<ExecutionEvent>,
+        verification: VerificationStatus,
+    ) -> DbResult<Vec<ExecutionEvent>> {
+        self.transition_run_inner(
+            project_id,
+            run_id,
+            to,
+            failure_reason,
+            events,
+            None,
+            Some(verification.as_str()),
+        )
+        .await
     }
 
     /// Same as [`Self::transition_run`], but refuses the write unless this lease generation still owns the run.
@@ -321,6 +344,32 @@ impl Db {
             failure_reason,
             events,
             Some((owner, generation)),
+            None,
+        )
+        .await
+    }
+
+    /// Lease-fenced transition that also sets `verification_status` in the same row update.
+    /// A stale generation changes neither the run status nor the verification column.
+    pub async fn transition_run_leased_with_verification(
+        &self,
+        project_id: Uuid,
+        run_id: Uuid,
+        to: RunStatus,
+        failure_reason: Option<&str>,
+        events: Vec<ExecutionEvent>,
+        owner: &str,
+        generation: i64,
+        verification: VerificationStatus,
+    ) -> DbResult<Vec<ExecutionEvent>> {
+        self.transition_run_inner(
+            project_id,
+            run_id,
+            to,
+            failure_reason,
+            events,
+            Some((owner, generation)),
+            Some(verification.as_str()),
         )
         .await
     }
@@ -333,6 +382,7 @@ impl Db {
         failure_reason: Option<&str>,
         events: Vec<ExecutionEvent>,
         lease: Option<(&str, i64)>,
+        verification: Option<&str>,
     ) -> DbResult<Vec<ExecutionEvent>> {
         let mut tx = self.pool.begin().await?;
         let now = Utc::now();
@@ -343,6 +393,7 @@ impl Db {
         };
         let result = sqlx::query(
             r#"UPDATE runs SET status = $2, updated_at = $3,
+                 verification_status = CASE WHEN $9::text IS NULL THEN verification_status ELSE $9 END,
                  failure_reason = CASE
                     WHEN $2 IN ('COMPLETED') THEN NULL
                     WHEN $4::text IS NOT NULL THEN $4
@@ -362,6 +413,7 @@ impl Db {
         .bind(project_id)
         .bind(lease_owner)
         .bind(lease_generation)
+        .bind(verification)
         .execute(&mut *tx)
         .await?;
         if result.rows_affected() == 0 {
@@ -391,12 +443,71 @@ impl Db {
         Ok(())
     }
 
+    /// Updates verification only while `owner` still holds `generation`.
+    /// Returns `Conflict` when the lease was stolen or expired, and does not write.
+    pub async fn set_run_verification_leased(
+        &self,
+        run_id: Uuid,
+        status: VerificationStatus,
+        owner: &str,
+        generation: i64,
+    ) -> DbResult<()> {
+        let result = sqlx::query(
+            r#"UPDATE runs SET verification_status = $2, updated_at = now()
+               WHERE id = $1
+                 AND lease_owner = $3
+                 AND lease_generation = $4
+                 AND (lease_expires_at IS NULL OR lease_expires_at > now())"#,
+        )
+        .bind(run_id)
+        .bind(status.as_str())
+        .bind(owner)
+        .bind(generation)
+        .execute(&self.pool)
+        .await?;
+        if result.rows_affected() == 0 {
+            return Err(StorageError::Conflict(format!(
+                "run {run_id} verification update rejected (fenced lease)"
+            )));
+        }
+        Ok(())
+    }
+
     pub async fn set_final_output(&self, run_id: Uuid, output: Option<&str>) -> DbResult<()> {
         sqlx::query("UPDATE runs SET final_output = $2, updated_at = now() WHERE id = $1")
             .bind(run_id)
             .bind(output)
             .execute(&self.pool)
             .await?;
+        Ok(())
+    }
+
+    /// Writes `final_output` only while this lease generation still owns the run.
+    pub async fn set_final_output_leased(
+        &self,
+        run_id: Uuid,
+        output: Option<&str>,
+        owner: &str,
+        generation: i64,
+    ) -> DbResult<()> {
+        let result = sqlx::query(
+            r#"UPDATE runs SET final_output = $2, updated_at = now()
+               WHERE id = $1
+                 AND lease_owner = $3
+                 AND lease_generation = $4
+                 AND (lease_expires_at IS NULL OR lease_expires_at > now())"#,
+        )
+        .bind(run_id)
+        .bind(output)
+        .bind(owner)
+        .bind(generation)
+        .execute(&self.pool)
+        .await?;
+        if result.rows_affected() == 0 {
+            return Err(StorageError::Conflict(format!(
+                "run {run_id} final_output update rejected (fenced lease)"
+            )));
+        }
         Ok(())
     }
 
