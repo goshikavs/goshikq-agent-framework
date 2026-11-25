@@ -326,10 +326,7 @@ impl RunExecutor {
                 )
                 .await
         } else {
-            self.rt
-                .db
-                .set_run_verification(self.run_id, status)
-                .await
+            self.rt.db.set_run_verification(self.run_id, status).await
         };
         match result {
             Ok(()) => true,
@@ -467,7 +464,11 @@ impl RunExecutor {
         match end {
             RunEnd::Completed => {
                 let verified = self.goal_verified;
-                let outcome = if verified { "VERIFIED" } else { "COMPLETED_UNVERIFIED" };
+                let outcome = if verified {
+                    "VERIFIED"
+                } else {
+                    "COMPLETED_UNVERIFIED"
+                };
                 let ev = self
                     .event(EventType::RunCompleted)
                     .with_status(if verified {
@@ -788,9 +789,7 @@ impl RunExecutor {
                             }
                             continue;
                         }
-                        let _ = self
-                            .record_verification(VerificationStatus::Failed)
-                            .await;
+                        let _ = self.record_verification(VerificationStatus::Failed).await;
                         Err(RunEnd::Failed(format!("goal not satisfied: {reason}")))
                     }
                 };

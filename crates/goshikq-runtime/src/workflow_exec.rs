@@ -1043,9 +1043,7 @@ impl RunExecutor {
             self.emit(ev).await;
             Ok(json!({"verified": true, "path": path, "actual": actual}))
         } else {
-            let _ = self
-                .record_verification(VerificationStatus::Failed)
-                .await;
+            let _ = self.record_verification(VerificationStatus::Failed).await;
             let ev = self
                 .event(EventType::VerificationFailed)
                 .with_status(EventStatus::Failed)
