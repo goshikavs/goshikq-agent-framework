@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.0 — prepared, not published
+
+Source package version is `1.0.0` (Python `1.0.0`). This section is not a GitHub Release. There is no `v1.0.0` tag. Public downloads remain [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2). `v1.0.0-rc.1` and `v1.0.0-rc.2` tags and archives stay published.
+
+### Changed
+
+- Cargo, npm, and Python package metadata move from the rc.2 prerelease strings to stable `1.0.0`.
+- `COMPLETED` is not `VERIFIED` unless goal verification is accepted in the same lease-fenced write.
+- `url` 2.5.9. `jsonwebtoken` stays 12.0.0.
+
 ## v1.0.0-rc.2 — GitHub prerelease (2026-11-20)
 
 GitHub prerelease: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2  

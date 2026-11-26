@@ -49,7 +49,7 @@ def test_python_wheel_isolated_install_and_runtime():
 import goshikq_ai
 from goshikq_ai import Agent, Goal, Runtime, tool, StateSnapshot
 from goshikq_ai.models import MockModel, ModelTurn
-assert goshikq_ai.__version__ == "1.0.0rc2"
+assert goshikq_ai.__version__ == "1.0.0"
 assert hasattr(Agent, '__init__')
 assert callable(tool)
 print('imports-ok', goshikq_ai.__version__)

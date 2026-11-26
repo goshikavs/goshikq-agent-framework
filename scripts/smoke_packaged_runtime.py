@@ -154,9 +154,13 @@ def main() -> int:
         if help_out.returncode != 0:
             raise SystemExit(help_out.stdout + help_out.stderr)
         ver_out = subprocess.run([str(cli), "--version"], capture_output=True, text=True, timeout=30)
-        print("cli --version:", ver_out.stdout.strip() or ver_out.stderr.strip())
-        if "goshikq" not in (ver_out.stdout + ver_out.stderr + help_out.stdout).lower():
+        printed = (ver_out.stdout + ver_out.stderr).strip()
+        print("cli --version:", printed)
+        if "goshikq" not in (printed + help_out.stdout).lower():
             raise SystemExit("CLI help/version did not mention goshikq")
+        expected = os.environ.get("EXPECTED_VERSION", "1.0.0")
+        if expected not in printed.replace(",", " ").split():
+            raise SystemExit(f"CLI version {printed!r} is not {expected}")
         srv_help = subprocess.run([str(server), "--help"], capture_output=True, text=True, timeout=30)
         if srv_help.returncode != 0:
             raise SystemExit(srv_help.stdout + srv_help.stderr)
@@ -184,9 +188,8 @@ def main() -> int:
         wait_ready(base, proc, log)
         health = http_json(f"{base}/health")
         print("health:", json.dumps(health, sort_keys=True))
-        expected = env.get("EXPECTED_VERSION", "1.0.0-rc.2")
-        if health.get("version") not in {"1.0.0-rc.1", "1.0.0-rc.2", expected}:
-            print("warning: /health version", health.get("version"), file=sys.stderr)
+        if health.get("version") != expected:
+            raise SystemExit(f"/health version {health.get('version')!r} != {expected}")
 
         if not args.skip_agent:
             subprocess.check_call(

@@ -1,7 +1,7 @@
 {
   "name": "goshikq-agent-framework",
   "private": true,
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0",
   "overrides": {
     "dompurify": "3.4.17",
     "postcss": "8.5.32",

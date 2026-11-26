@@ -1,7 +1,7 @@
 {
   "name": "typescript-refund-agent",
   "private": true,
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "start": "bun run main.ts",
