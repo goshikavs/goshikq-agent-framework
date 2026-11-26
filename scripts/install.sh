@@ -1,10 +1,10 @@
 #!/bin/sh
 # Install a published Goshikq GitHub Release archive after checking SHA256SUMS.
 # No root required. Does not publish or modify a release.
-# Usage: sh scripts/install.sh --version v1.0.0-rc.2
+# Usage: sh scripts/install.sh --version v1.0.0
 set -eu
 
-version="v1.0.0-rc.2"
+version="v1.0.0"
 dest=""
 repo="goshikavs/goshikq-agent-framework"
 

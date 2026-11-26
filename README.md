@@ -4,9 +4,9 @@ Goshikq is an open-source **AI agent framework** with a **Rust runtime** for **d
 
 **Build Agents. Verify Outcomes.**
 
-Source: [goshikavs/goshikq-agent-framework](https://github.com/goshikavs/goshikq-agent-framework). Website (GitHub Pages): [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/). Native archives: GitHub prerelease [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2).
+Source: [goshikavs/goshikq-agent-framework](https://github.com/goshikavs/goshikq-agent-framework). Website (GitHub Pages): [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/). Native archives: GitHub Release [`v1.0.0`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0).
 
-**Status:** GitHub **prerelease** [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2) (binaries from `07b0abd56bc84fc78532bc2ce8de2c14de9cf29b`). Source packages in this tree are version `1.0.0` and are **not** published. This is **not** stable v1.0. There is **no** PyPI, npm, or crates.io package. Windows ARM64 is experimental. Not SOC 2 / HIPAA / PCI certified. [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) is **superseded** because it shipped `jsonwebtoken` 9.3.1 ([GHSA-h395-gr6q-cpjc](https://github.com/advisories/GHSA-h395-gr6q-cpjc) / CVE-2026-25537). Use rc.2 for new installs. The rc.1 tag and archives remain published for history.
+**Status:** GitHub **stable** release [`v1.0.0`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0) (binaries from `83bc8e71edf46a20986f2380309e3d74d0ff3ab9`). There is **no** PyPI, npm, or crates.io package. Windows ARM64 is experimental. Not SOC 2 / HIPAA / PCI certified. [`v1.0.0-rc.1`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.1) is **superseded** because it shipped `jsonwebtoken` 9.3.1 ([GHSA-h395-gr6q-cpjc](https://github.com/advisories/GHSA-h395-gr6q-cpjc) / CVE-2026-25537). [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2) remains published. Use v1.0.0 for new installs.
 
 - Languages: Rust (runtime), Python 3.11+ (SDK), TypeScript (Studio + native SDK worker)
 - Runtime: `goshikq-server` on `http://127.0.0.1:7400`
@@ -113,22 +113,22 @@ OTLP/HTTP (protobuf and JSON) ingestion is available. MCP tools are wrapped with
 
 - Rust (`rustup`), Python 3.11+, Bun, optional Docker
 
-## Install the public prerelease
+## Install the stable release
 
-Stable v1.0.0 is not published. These commands install the current public prerelease, `v1.0.0-rc.2`, from GitHub Releases. The script picks the archive for the OS and CPU, checks `SHA256SUMS`, and extracts under the user profile. It does not need an administrator account. Unsupported CPU architectures stop with an error.
+These commands install the public stable release, `v1.0.0`, from GitHub Releases. The script picks the archive for the OS and CPU, checks `SHA256SUMS`, and extracts under the user profile. It does not need an administrator account. Unsupported CPU architectures stop with an error. Windows ARM64 is experimental.
 
-Manual alternative: download the archive and `SHA256SUMS` from [the v1.0.0-rc.2 release](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2), compare the checksum, and unzip it yourself.
+Manual alternative: download the archive and `SHA256SUMS` from [the v1.0.0 release](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0), compare the checksum, and unzip it yourself.
 
 Windows PowerShell, from a clone:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0-rc.2
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0
 ```
 
 macOS and Linux, from a clone:
 
 ```bash
-sh scripts/install.sh --version v1.0.0-rc.2
+sh scripts/install.sh --version v1.0.0
 ```
 
 The installer puts `goshikq` and `goshikq-server` on a user bin directory and prints the PATH line. It does not install the Python SDK. The SDK is not on PyPI; install it from this repository with `python -m pip install -e sdk/python`.

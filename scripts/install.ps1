@@ -1,10 +1,10 @@
 # Installs a published Goshikq GitHub Release archive after checking SHA256SUMS.
 # Does not request administrator rights. Does not publish or modify a release.
-# Usage: powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0-rc.2
+# Usage: powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0
 
 [CmdletBinding()]
 param(
-    [string]$Version = "v1.0.0-rc.2",
+    [string]$Version = "v1.0.0",
     [string]$Dest = ""
 )
 

@@ -87,9 +87,9 @@ def main() -> int:
 
     home = (ROOT / "apps" / "website" / "src" / "pages" / "index.astro").read_text(encoding="utf-8")
     if "v1.0 is not ready" in home:
-        fail("homepage must not use 'v1.0 is not ready'; say stable v1.0.0 is unpublished")
-    if "Stable v1.0.0 is not published" not in home:
-        fail("homepage limitations must say stable v1.0.0 is not published")
+        fail("homepage must not use 'v1.0 is not ready'")
+    if "Stable v1.0.0 is the GitHub Release" not in home:
+        fail("homepage limitations must identify stable v1.0.0 as the GitHub Release")
 
     deploy = (ROOT / "docs" / "website" / "deployment.md").read_text(encoding="utf-8")
     if "apps/website" not in deploy or "docs.yml" not in deploy:

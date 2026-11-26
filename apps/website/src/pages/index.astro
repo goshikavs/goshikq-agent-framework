@@ -25,7 +25,7 @@ const capabilities = [
     <p class="lede">{SITE.description}</p>
     <div class="cta-row">
       <a class="btn btn-primary" href={withBase("/quickstart/")}>Get started</a>
-      <a class="btn btn-secondary" href={SITE.githubPrerelease}>v1.0.0-rc.2 prerelease</a>
+      <a class="btn btn-secondary" href={SITE.githubPrerelease}>v1.0.0 release</a>
       <a class="btn btn-ghost" href={SITE.github}>View on GitHub</a>
     </div>
     <pre class="install"><code>git clone {SITE.githubGit}
@@ -96,7 +96,7 @@ python examples/hello-agent/main.py
       <div class="grid">
         <article class="card"><h3><a href={SITE.github}>Source</a></h3><p>Apache 2.0 monorepo. Rust runtime, Python and TypeScript SDKs, Next.js Studio.</p></article>
         <article class="card"><h3><a href={SITE.ciUrl}>CI</a></h3><p>GitHub Actions on main: rust, SDKs, Studio, Playwright, integration, docker-smoke, security scans.</p></article>
-        <article class="card"><h3><a href={withBase("/docs/status/")}>Limitations</a></h3><p>No SOC 2 / HIPAA / PCI claim. No published PyPI, npm, or crates.io package. Stable v1.0.0 is not published.</p></article>
+        <article class="card"><h3><a href={withBase("/docs/status/")}>Limitations</a></h3><p>No SOC 2 / HIPAA / PCI claim. No published PyPI, npm, or crates.io package. Stable v1.0.0 is the GitHub Release. Windows ARM64 is experimental.</p></article>
       </div>
     </div>
   </section>

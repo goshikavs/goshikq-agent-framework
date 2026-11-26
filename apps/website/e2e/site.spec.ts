@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const PRERELEASE = "https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2";
-const ASSETS = "https://github.com/goshikavs/goshikq-agent-framework/releases/download/v1.0.0-rc.2";
+const RELEASE = "https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0";
+const ASSETS = "https://github.com/goshikavs/goshikq-agent-framework/releases/download/v1.0.0";
 
 test.describe("Goshikq website", () => {
   test("homepage has Goshikq branding and no Axiom chrome", async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe("Goshikq website", () => {
     const body = await page.locator("body").innerText();
     expect(body).not.toMatch(/Axiom Studio/i);
     expect(body).toMatch(/Goshikq/);
-    expect(body).toMatch(/Release candidate/);
+    expect(body).toMatch(/Stable/);
   });
 
   test("homepage HTML is meaningful without waiting on demo JS", async ({ page }) => {
@@ -27,33 +27,33 @@ test.describe("Goshikq website", () => {
     expect(html).not.toMatch(/google-site-verification/i);
   });
 
-  test("download identifies the GitHub prerelease and unpublished registries", async ({ page }) => {
+  test("download identifies the stable GitHub release and unpublished registries", async ({ page }) => {
     await page.goto("/download/");
-    await expect(page.getByText(/GitHub prerelease, not stable v1\.0/i).first()).toBeVisible();
+    await expect(page.getByText(/stable GitHub Release/i).first()).toBeVisible();
     await expect(page.getByText(/Windows ARM64 is experimental/i).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /Open the GitHub prerelease/i })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: /Open the GitHub release/i })).toHaveAttribute(
       "href",
-      PRERELEASE,
+      RELEASE,
     );
     await expect(page.getByRole("link", { name: /main\.zip/i })).toHaveAttribute(
       "href",
       "https://github.com/goshikavs/goshikq-agent-framework/archive/refs/heads/main.zip",
     );
-    await expect(page.locator('a[href*="/releases/download/v1.0.0/"]')).toHaveCount(0);
-    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]')).not.toHaveCount(0);
+    await expect(page.locator('a[href*="/releases/download/v1.0.0/"]')).not.toHaveCount(0);
+    await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]')).toHaveCount(0);
     await expect(page.locator('a[href*="/releases/download/v1.0.0-rc.1/"]')).toHaveCount(0);
     await expect(page.locator('a[href*="pypi.org/project"]')).toHaveCount(0);
     await expect(page.locator('a[href*="crates.io"]')).toHaveCount(0);
   });
 
-  test("published RC download links resolve", async ({ request, page }) => {
+  test("published stable download links resolve", async ({ request, page }) => {
     test.setTimeout(90_000);
     await page.goto("/download/");
-    const hrefs = await page.locator('a[href*="/releases/download/v1.0.0-rc.2/"]').evaluateAll((els) =>
+    const hrefs = await page.locator('a[href*="/releases/download/v1.0.0/"]').evaluateAll((els) =>
       els.map((el) => (el as HTMLAnchorElement).href),
     );
     expect(hrefs.length).toBeGreaterThan(5);
-    expect(hrefs.every((h) => h.includes("v1.0.0-rc.2"))).toBeTruthy();
+    expect(hrefs.every((h) => h.includes("/releases/download/v1.0.0/"))).toBeTruthy();
     let body = "";
     let last = "no response";
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -69,9 +69,10 @@ test.describe("Goshikq website", () => {
       }
     }
     expect(body, `published SHA256SUMS was not readable: ${last}`).toMatch(
-      /goshikq-1\.0\.0-rc\.2-linux-amd64\.tar\.gz/,
+      /goshikq-1\.0\.0-linux-amd64\.tar\.gz/,
     );
-    expect(body).toMatch(/goshikq-1\.0\.0-rc\.2-windows-arm64\.zip/);
+    expect(body).toMatch(/goshikq-1\.0\.0-windows-arm64\.zip/);
+    expect(body).toMatch(/40ecd97e8bb1cab931b718b78be5bdc6cd26e6021a5ef1a1d275f4ca98cf1da9/);
   });
 
   test("docs landing and search UI exist", async ({ page }) => {
@@ -86,7 +87,7 @@ test.describe("Goshikq website", () => {
     expect(body).not.toMatch(/Alpha software/i);
   });
 
-  test("homepage SEO title, description, and prerelease copy", async ({ page }) => {
+  test("homepage SEO title, description, and stable release copy", async ({ page }) => {
     const res = await page.goto("/", { waitUntil: "domcontentloaded" });
     expect(res?.ok()).toBeTruthy();
     await expect(page).toHaveTitle(/Goshikq/);
@@ -98,8 +99,8 @@ test.describe("Goshikq website", () => {
     expect(html).not.toMatch(/Alpha software/i);
     expect(html).not.toMatch(/google-site-verification/i);
     const body = await page.locator("body").innerText();
-    expect(body).toMatch(/1\.0\.0-rc\.2/);
-    expect(body).toMatch(/Stable v1\.0\.0 is not published/);
+    expect(body).toMatch(/Stable 1\.0\.0/);
+    expect(body).toMatch(/Stable v1\.0\.0 is the GitHub Release/);
     expect(body).not.toMatch(/v1\.0 is not ready/);
   });
 
@@ -241,6 +242,6 @@ test.describe("build artifacts", () => {
 test("download clone command matches the public repo", async () => {
   const site = readFileSync(resolve("src/lib/site.ts"), "utf8");
   expect(site).toContain("https://github.com/goshikavs/goshikq-agent-framework.git");
-  expect(site).toContain(PRERELEASE);
+  expect(site).toContain(RELEASE);
   expect(site).not.toContain("pypi.org/project");
 });

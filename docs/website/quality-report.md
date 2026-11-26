@@ -10,8 +10,8 @@ Documentation: Starlight under `/docs/**` (installation, architecture, verificat
 
 ## Claims policy
 
-- Tree package version `1.0.0` (Python `1.0.0`). Public GitHub **prerelease** remains `v1.0.0-rc.2`. Stable `v1.0.0` is not tagged.
-- No PyPI, npm, or crates.io packages. No stable `v1.0.0` tag.
+- Tree package version `1.0.0` (Python `1.0.0`). Public GitHub Release is stable `v1.0.0`.
+- No PyPI, npm, or crates.io packages. Native archives are the GitHub Release.
 - No SOC 2 / HIPAA / PCI.
 - Studio Tools/Goals/Evaluations/Regression/Benchmarks remain planned.
 - Homepage verification demo is labeled as not a live runtime.
@@ -35,7 +35,7 @@ Documentation: Starlight under `/docs/**` (installation, architecture, verificat
 | Playwright desktop 1440 + mobile 375 | 32 passed, 0 skipped |
 | robots.txt | `Allow: /`, Sitemap to the Pages URL, no sitewide Disallow |
 | Canonical / noindex | Marketing pages have `rel=canonical` and `index,follow` |
-| Download honesty | Links are `v1.0.0-rc.2` GitHub assets; SHA256SUMS GET 200 |
+| Download honesty | Links are `v1.0.0` GitHub Release assets; SHA256SUMS GET 200 |
 | Axiom chrome | Not present on homepage |
 | Mobile overflow | Homepage kicker wrap, install `pre` wrap, architecture diagram contained |
 | Lighthouse | Not a CI gate. DOMContentLoaded asserted under 20s in Playwright |
