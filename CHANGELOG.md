@@ -1,8 +1,10 @@
 # Changelog
 
-## v1.0.0 — prepared, not published
+## v1.0.0 — stable GitHub Release (2026-11-26)
 
-Source package version is `1.0.0` (Python `1.0.0`). This section is not a GitHub Release. There is no `v1.0.0` tag. Public downloads remain [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2). `v1.0.0-rc.1` and `v1.0.0-rc.2` tags and archives stay published.
+GitHub Release: https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0  
+Tag target: `83bc8e71edf46a20986f2380309e3d74d0ff3ab9`. Not on PyPI, npm, or crates.io.  
+`v1.0.0-rc.1` and `v1.0.0-rc.2` remain published. rc.1 stays superseded because it shipped `jsonwebtoken` 9.3.1.
 
 ### Changed
 

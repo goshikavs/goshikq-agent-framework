@@ -1,6 +1,6 @@
 # Upgrade and migration
 
-Goshikq package metadata in this tree is `1.0.0` (Python `1.0.0`). That tag is not published. Public GitHub archives remain `v1.0.0-rc.2`. `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1. Install rc.2 until the owner publishes `v1.0.0`.
+Goshikq `v1.0.0` is the published GitHub Release (commit `83bc8e71edf46a20986f2380309e3d74d0ff3ab9`). `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1. `v1.0.0-rc.2` remains published. Install `v1.0.0` for new machines.
 
 ## Database
 
@@ -32,7 +32,7 @@ Install from a built wheel/tarball, not an editable checkout, when validating a 
 python -m build --wheel sdk/python
 pip install dist/goshikq_ai-*.whl
 bun pm pack   # in sdk/typescript
-bun add ./goshikq-sdk-1.0.0-rc.2.tgz
+bun add ./goshikq-sdk-1.0.0.tgz
 ```
 
 Nothing is published to PyPI or npm in this milestone.

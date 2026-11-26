@@ -1,6 +1,6 @@
 # Google Search Console and Bing Webmaster Tools
 
-These steps apply after the Astro site is deployed to GitHub Pages. Public native archives are already [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2). Do not treat that tag as Search Console setup or as a Pages deploy.
+These steps apply to the Astro site on GitHub Pages. Public native archives are the stable release [`v1.0.0`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0). `v1.0.0-rc.1` and `v1.0.0-rc.2` remain published. Do not treat a release tag as Search Console setup or as a Pages deploy.
 
 Do **not** promise indexing speed or rankings. This document is setup only.
 

@@ -1,6 +1,6 @@
 # Implementation status
 
-Current public status: GitHub **prerelease** [`v1.0.0-rc.2`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0-rc.2). This is **not** stable v1.0.0. Features are **available**, **experimental**, or **planned**. Nothing here is marked available unless it runs against persisted data or real code paths.
+Current public status: GitHub **stable** release [`v1.0.0`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0) (commit `83bc8e71edf46a20986f2380309e3d74d0ff3ab9`). Features are **available**, **experimental**, or **planned**. Nothing here is marked available unless it runs against persisted data or real code paths.
 
 See `docs/release/v1.0-readiness-audit.md` and `docs/release/v1.0-release-gates.md`. Historical in-tree milestone: **v0.9.1** (`docs/milestones/v0.9.1-report.md`). Temporal remains deferred.
 
@@ -176,7 +176,7 @@ D does not detect hidden edges (recall below 1). B covers those node ids by rech
 - CLI: `doctor`, `init --template python|typescript`, `run`, `studio`, `runs list|inspect`, `verify`, `agents list`, `workflows validate|publish|run`
 - Executable workflows: versioned schema, validation, Rust pinned-version execution, Studio React Flow editor, node-level run status
 - Public website: Astro + Starlight (`apps/website`) on GitHub Pages; VitePress (`docs/site`) remains a local/CI documentation build
-- Local SDK packages: Python wheel/sdist `1.0.0`, TypeScript tarball `1.0.0` (not published to PyPI/npm; public GitHub native archives remain `v1.0.0-rc.2`)
+- Local SDK packages: Python wheel/sdist `1.0.0`, TypeScript tarball `1.0.0` (not published to PyPI/npm; public GitHub native archives are `v1.0.0`)
 - OpenAPI at `GET /api/v1/openapi.json`
 - Event batch ingestion `POST /api/v1/events/batch` (idempotent)
 - OTLP/HTTP protobuf and JSON trace ingest `POST /v1/traces` (mapping `otel-genai-v1`; spans are not verified outcomes)
