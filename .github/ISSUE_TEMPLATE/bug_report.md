@@ -3,7 +3,7 @@ name: Bug report
 about: Something does not match documented behavior
 ---
 
-**Goshikq version** (for example `v1.0.0-rc.1` GitHub prerelease, or a git SHA)
+**Goshikq version** (for example stable `v1.0.0`, or a git SHA)
 
 **What happened**
 

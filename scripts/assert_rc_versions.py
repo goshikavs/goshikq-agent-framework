@@ -64,6 +64,9 @@ def check_release_status_and_download_links() -> None:
         "**Status:** GitHub **stable** release" in readme and PUBLIC_COMMIT in readme,
         "README.md status line must identify v1.0.0 and its source commit",
     )
+    check("Latest Stable Release: v1.0.0" in readme, "README.md must lead with Latest Stable Release: v1.0.0")
+    check("0.1.0-alpha" not in readme, "README.md must not advertise 0.1.0-alpha")
+    check("Current release: v1.0.0-rc.2" not in readme, "README.md must not name rc.2 as the current release")
     check("There is **no** PyPI, npm, or crates.io package" in readme, "README.md must deny registry packages")
     check("Windows ARM64 is experimental" in readme, "README.md must keep Windows ARM64 experimental")
     check("superseded" in readme, "README.md must mark v1.0.0-rc.1 as superseded")
@@ -73,9 +76,14 @@ def check_release_status_and_download_links() -> None:
 
     security = read(ROOT / "SECURITY.md")
     check(
+        "Current supported stable version: v1.0.0." in security,
+        "SECURITY.md must name v1.0.0 as the supported stable version",
+    )
+    check(
         "latest public GitHub Release is stable `v1.0.0`" in security,
         "SECURITY.md must identify v1.0.0 as the latest public release",
     )
+    check("historical prereleases" in security, "SECURITY.md must classify rc.1 and rc.2 as historical")
     check("superseded" in security, "SECURITY.md must mark v1.0.0-rc.1 as superseded")
     check("v1.0.0-rc.2" in security, "SECURITY.md must keep rc.2 published")
 
@@ -113,6 +121,20 @@ def check_release_status_and_download_links() -> None:
     for name, digest in PUBLIC_HASHES.items():
         check(name in download, f"download page must list {name}")
         check(digest in download, f"download page must list SHA256 for {name}")
+    check("SHA256SUMS" in download, "download page must link SHA256SUMS")
+    check("goshikq-1.0.0.spdx.json" in download, "download page must link the SPDX SBOM")
+    check("license-inventory.md" in download, "download page must link the license inventory")
+    check("artifact-manifest.json" in download, "download page must link the provenance manifest")
+
+    install_ps1 = read(ROOT / "scripts" / "install.ps1")
+    install_sh = read(ROOT / "scripts" / "install.sh")
+    check('[string]$Version = "v1.0.0"' in install_ps1, "install.ps1 must default to v1.0.0")
+    check('version="v1.0.0"' in install_sh, "install.sh must default to v1.0.0")
+    check("v1.0.0-rc.2" not in install_ps1, "install.ps1 must not default to or document rc.2 as current")
+    check("v1.0.0-rc.2" not in install_sh, "install.sh must not default to or document rc.2 as current")
+
+    marketing = read(ROOT / "apps" / "website" / "src" / "layouts" / "Marketing.astro")
+    check("softwareVersion: SITE.version" in marketing, "structured softwareVersion must follow SITE.version")
 
     getting = read(ROOT / "apps" / "website" / "src" / "content" / "docs" / "docs" / "getting-started.mdx")
     check(
