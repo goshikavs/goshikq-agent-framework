@@ -5,13 +5,18 @@ description: Run Goshikq locally with the Rust runtime, a mock model, and goal v
 
 Published native archives are [GitHub Release v1.0.0](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0). `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1 (GHSA-h395-gr6q-cpjc / CVE-2026-25537). `v1.0.0-rc.2` remains published. Python and TypeScript SDKs are not on PyPI or npm.
 
-Follow the same path as the repository README. The hello-agent example must print `verification: VERIFIED`.
+The runtime installer and the SDK install are separate. The hello-agent example must print `verification: VERIFIED`.
 
 ```bash
 git clone https://github.com/goshikavs/goshikq-agent-framework.git
 cd goshikq-agent-framework
-cp .env.example .env
-cargo run -p goshikq-server
+sh scripts/install.sh --version v1.0.0
+```
+
+Windows uses `powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0`. Follow the printed PATH line. `goshikq --version` prints `goshikq 1.0.0`.
+
+```bash
+DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server
 python -m pip install -e sdk/python
 python examples/hello-agent/main.py
 ```

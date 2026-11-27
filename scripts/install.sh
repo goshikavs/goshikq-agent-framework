@@ -18,6 +18,28 @@ done
 
 fail() { echo "$1" >&2; exit 1; }
 
+check_sha() {
+  file="$1"
+  expected="$2"
+  if command -v sha256sum >/dev/null 2>&1; then
+    actual=$(sha256sum "$file" | awk '{print $1}')
+  elif command -v shasum >/dev/null 2>&1; then
+    actual=$(shasum -a 256 "$file" | awk '{print $1}')
+  else
+    fail "Need sha256sum or shasum to verify the archive."
+  fi
+  if [ "$actual" != "$expected" ]; then
+    fail "SHA256 mismatch for ${file}: expected ${expected} actual ${actual}"
+  fi
+  echo "SHA256 ok ${actual}"
+}
+
+# CI sets these to prove a bad digest is rejected. A normal install does not.
+if [ -n "${GOSHIKQ_CHECK_FILE:-}" ]; then
+  check_sha "$GOSHIKQ_CHECK_FILE" "${GOSHIKQ_CHECK_EXPECTED:?GOSHIKQ_CHECK_EXPECTED is required}"
+  exit 0
+fi
+
 os=$(uname -s)
 machine=$(uname -m)
 case "$os:$machine" in
@@ -47,17 +69,7 @@ expected=$(awk -v name="$asset" '$2 == name || $2 == ("./" name) { print $1; exi
 if [ -z "$expected" ]; then
   fail "SHA256SUMS has no entry for ${asset}"
 fi
-if command -v sha256sum >/dev/null 2>&1; then
-  actual=$(sha256sum "${work}/${asset}" | awk '{print $1}')
-elif command -v shasum >/dev/null 2>&1; then
-  actual=$(shasum -a 256 "${work}/${asset}" | awk '{print $1}')
-else
-  fail "Need sha256sum or shasum to verify the archive."
-fi
-if [ "$actual" != "$expected" ]; then
-  fail "SHA256 mismatch for ${asset}: expected ${expected} actual ${actual}"
-fi
-echo "SHA256 ok ${actual}"
+check_sha "${work}/${asset}" "$expected"
 
 if [ -z "$dest" ]; then
   dest="${HOME}/.local/share/goshikq/${tag}"

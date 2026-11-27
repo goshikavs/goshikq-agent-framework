@@ -29,15 +29,31 @@ const capabilities = [
       <a class="btn btn-ghost" href={SITE.github}>View on GitHub</a>
     </div>
     <pre class="install"><code>git clone {SITE.githubGit}
-python -m pip install -e sdk/python
-python examples/hello-agent/main.py
-# expect: status COMPLETED  verification VERIFIED</code></pre>
+cd goshikq-agent-framework
+sh scripts/install.sh --version v1.0.0
+# Windows: powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0</code></pre>
     <Shot
       eager
       src="/media/studio/goshikq-studio-dashboard.webp"
       alt="Goshikq Studio overview showing persisted execution metrics, verification rate, and framework breakdown"
       caption="Goshikq Studio overview from a live local runtime. Planned nav items stay labeled soon."
     />
+  </section>
+
+  <section class="section" id="get-started">
+    <div class="wrap">
+      <h2>Get started</h2>
+      <p class="lede">The runtime and the SDK are separate. Latest stable runtime: GitHub Release v1.0.0. Python and TypeScript packages install from a clone until the owner publishes them.</p>
+      <ol class="steps">
+        <li class="step"><strong>Select</strong><span>Windows, macOS, or Linux on the install page.</span></li>
+        <li class="step"><strong>Install</strong><span>Run <code>scripts/install.sh</code> or <code>scripts/install.ps1</code> for v1.0.0.</span></li>
+        <li class="step"><strong>Verify</strong><span><code>goshikq --version</code> prints <code>goshikq 1.0.0</code>.</span></li>
+        <li class="step"><strong>Start</strong><span>Start <code>goshikq-server</code> and open <code>/health</code>.</span></li>
+        <li class="step"><strong>Run</strong><span>Install the Python SDK from the clone and run hello-agent.</span></li>
+        <li class="step"><strong>Outcome</strong><span>The example prints <code>verification: VERIFIED</code>.</span></li>
+      </ol>
+      <p><a class="btn btn-primary" href={withBase("/download/")}>Installation steps</a> <a class="btn btn-secondary" href={withBase("/quickstart/")}>Quickstart</a></p>
+    </div>
   </section>
 
   <section class="section">

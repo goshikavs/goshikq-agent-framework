@@ -1,0 +1,145 @@
+---
+/**
+ * Commands shown here are the ones the install scripts and hello-agent example accept.
+ * Registry installs are omitted until the owner publishes them.
+ */
+---
+<div class="journey">
+  <fieldset>
+    <legend>Platform</legend>
+    <label><input type="radio" name="gk-os" id="os-linux" checked /> Linux</label>
+    <label><input type="radio" name="gk-os" id="os-macos" /> macOS</label>
+    <label><input type="radio" name="gk-os" id="os-windows" /> Windows</label>
+  </fieldset>
+  <fieldset>
+    <legend>SDK</legend>
+    <label><input type="radio" name="gk-lang" id="lang-python" checked /> Python</label>
+    <label><input type="radio" name="gk-lang" id="lang-typescript" /> TypeScript / JavaScript</label>
+  </fieldset>
+
+  <div class="panel panel-linux">
+    <h2>Linux runtime</h2>
+    <p>The installer downloads the v1.0.0 GitHub Release for the CPU, checks SHA256SUMS, and prints a PATH line. It does not install a language SDK.</p>
+    <div class="copy-block">
+      <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
+cd goshikq-agent-framework
+sh scripts/install.sh --version v1.0.0</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Use the <code>export PATH=...</code> line the script prints, then check the version. Expected text: <code>goshikq 1.0.0</code>.</p>
+    <div class="copy-block">
+      <pre class="install"><code>goshikq --version</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Start the runtime with the embedded database. This is a local development setting. Production needs a real <code>DATABASE_URL</code> and must not use <code>GOSHIKQ_AUTH_MODE=none</code>.</p>
+    <div class="copy-block">
+      <pre class="install"><code>DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <div class="copy-block">
+      <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+  </div>
+
+  <div class="panel panel-macos">
+    <h2>macOS runtime</h2>
+    <p>The same installer selects the Apple Silicon or Intel archive. It does not install a language SDK.</p>
+    <div class="copy-block">
+      <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
+cd goshikq-agent-framework
+sh scripts/install.sh --version v1.0.0</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Use the printed PATH line. Expected version text: <code>goshikq 1.0.0</code>.</p>
+    <div class="copy-block">
+      <pre class="install"><code>goshikq --version</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <div class="copy-block">
+      <pre class="install"><code>DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <div class="copy-block">
+      <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+  </div>
+
+  <div class="panel panel-windows">
+    <h2>Windows runtime</h2>
+    <p>Windows AMD64 is the supported archive. The ARM64 Windows build is called out below the archive table. The script checks SHA256SUMS and prints a PATH line. It does not install a language SDK.</p>
+    <div class="copy-block">
+      <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
+cd goshikq-agent-framework
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Use the PATH line the script prints. Expected version text: <code>goshikq 1.0.0</code>.</p>
+    <div class="copy-block">
+      <pre class="install"><code>goshikq --version</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <div class="copy-block">
+      <pre class="install"><code>$env:DATABASE_URL="embedded"
+$env:GOSHIKQ_AUTH_MODE="none"
+$env:GOSHIKQ_BIND="127.0.0.1:7400"
+goshikq-server</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <div class="copy-block">
+      <pre class="install"><code>curl.exe -fsS http://127.0.0.1:7400/health</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+  </div>
+
+  <div class="panel panel-python">
+    <h2>Python SDK</h2>
+    <p>Install the SDK from this clone after the runtime is healthy. <code>goshikq-ai</code> is not on PyPI. CPython 3.11 through 3.14.</p>
+    <div class="copy-block">
+      <pre class="install"><code>python -m pip install -e sdk/python
+python examples/hello-agent/main.py</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Expected lines include <code>status: COMPLETED</code> and <code>verification: VERIFIED</code>.</p>
+    <p>The retail example checks a store snapshot, not the processor's accepted response:</p>
+    <div class="copy-block">
+      <pre class="install"><code>python examples/retail-refund/main.py</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>Expected verification: <code>VERIFIED</code> when the simulated order is refunded and the refund is settled.</p>
+  </div>
+
+  <div class="panel panel-typescript">
+    <h2>TypeScript / JavaScript SDK</h2>
+    <p>Build <code>@goshikq/sdk</code> from this clone. It is not on npm. The package is ESM for Node.js 20+ and Bun. CommonJS <code>require()</code> is not supported.</p>
+    <div class="copy-block">
+      <pre class="install"><code>cd sdk/typescript
+bun install
+bun run build</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+    <p>A consumer imports the built JavaScript. Start <code>goshikq-server</code> before <code>Runtime.run</code>.</p>
+    <div class="copy-block">
+      <pre class="install"><code>import &#123; Agent, Goal, Runtime &#125; from "@goshikq/sdk";</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const btn = target.closest("[data-copy]");
+    if (!(btn instanceof HTMLButtonElement)) return;
+    const code = btn.parentElement?.querySelector("code");
+    const text = code?.textContent ?? "";
+    void navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = "Copied";
+    });
+  });
+</script>

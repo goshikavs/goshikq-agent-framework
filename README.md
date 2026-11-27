@@ -25,6 +25,62 @@ Goshikq is an open-source AI agent framework with a Rust runtime for durable exe
 - Public website: [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/) ([`apps/website`](apps/website), Astro + Starlight) · `bun run website:build`
 - Maintainer: [goshikavs](https://github.com/goshikavs)
 
+## Quick start
+
+The runtime and the SDK are different installs. The commands below use the published **v1.0.0** runtime. Python `goshikq-ai` and TypeScript `@goshikq/sdk` are installed from this clone. They are not registry packages yet. Details: [installation guide](docs/guides/installation.md) and the [install page](https://goshikavs.github.io/goshikq-agent-framework/download/).
+
+```bash
+git clone https://github.com/goshikavs/goshikq-agent-framework.git
+cd goshikq-agent-framework
+sh scripts/install.sh --version v1.0.0
+```
+
+Windows, from the same clone:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0
+```
+
+Use the PATH line the script prints.
+
+```bash
+goshikq --version
+```
+
+Expected: `goshikq 1.0.0`.
+
+```bash
+DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server
+curl -fsS http://127.0.0.1:7400/health
+```
+
+Windows PowerShell uses `$env:DATABASE_URL="embedded"`, `$env:GOSHIKQ_AUTH_MODE="none"`, `$env:GOSHIKQ_BIND="127.0.0.1:7400"`, then `goshikq-server`. Health should include `"version":"1.0.0"`. `GOSHIKQ_AUTH_MODE=none` is for this local process only.
+
+Python SDK, from the clone, with the server already running:
+
+```bash
+python -m pip install -e sdk/python
+python examples/hello-agent/main.py
+```
+
+Expected: `verification:  VERIFIED`. The model must call `record_greeting`. A sentence about Ada is not the outcome.
+
+A separate example checks a store snapshot rather than a processor response:
+
+```bash
+python examples/retail-refund/main.py
+```
+
+TypeScript SDK, from the clone. This builds the package. It does not download it from npm.
+
+```bash
+cd sdk/typescript
+bun install
+bun run build
+```
+
+Node.js 20+ imports the built ESM. CommonJS `require()` is not supported. Bun 1.4.4 runs the same build.
+
 ## Why Goshikq?
 
 Existing frameworks already provide orchestration, retries, tracing, and checkpoints. Goshikq’s intended difference is the *combination* of:

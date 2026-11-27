@@ -2,7 +2,7 @@
 
 ## Unreleased — v1.0.1 distribution preparation
 
-Not published. The stable GitHub Release remains v1.0.0. Python `goshikq-ai` 1.0.1 and TypeScript `@goshikq/sdk` 1.0.1 are prepared for registry publication and are not on PyPI or npm. Rust crates stay `publish = false`.
+Not published. The stable GitHub Release remains v1.0.0. Python `goshikq-ai` 1.0.1 and TypeScript `@goshikq/sdk` 1.0.1 are prepared for registry publication and are not on PyPI or npm. Rust crates stay `publish = false`. The install page and README quick start use the v1.0.0 installer. `install-smoke.yml` runs that installer on GitHub-hosted runners. Trusted-publishing workflows stay manual and refuse an existing version.
 
 ## v1.0.0 — stable GitHub Release (2026-11-26)
 

@@ -12,16 +12,15 @@ The TypeScript SDK (`@goshikq/sdk`) defines agents, tools, goals, and a mock mod
 
 ## Install
 
-From the repository (Bun workspace):
+From the repository. This builds the package. It is not an npm install.
 
 ```bash
-bun install
 cd sdk/typescript
-bun test
-bun run typecheck
+bun install
+bun run build
 ```
 
-Node.js 20+ can import the same TypeScript sources. Library code uses `fetch` and `AbortSignal`, not Bun-only APIs.
+Node.js 20+ imports `dist/index.js` and the `.d.ts` declarations. The package is ESM. CommonJS `require()` is not supported. Bun 1.4.4 runs the same build. Library code uses `fetch` and `AbortSignal`.
 
 ```ts
 import { Agent, Goal, MockModel, Runtime, StateSnapshot, defineTool } from "@goshikq/sdk";

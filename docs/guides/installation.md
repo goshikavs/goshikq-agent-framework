@@ -2,6 +2,33 @@
 
 GitHub Release [`v1.0.0`](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0) publishes the stable native archives. `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1. `v1.0.0-rc.2` remains published. Python and TypeScript SDKs are not on PyPI or npm. Windows ARM64 is experimental.
 
+## Published runtime
+
+These commands install the v1.0.0 archives. They do not install a language SDK.
+
+```bash
+git clone https://github.com/goshikavs/goshikq-agent-framework.git
+cd goshikq-agent-framework
+sh scripts/install.sh --version v1.0.0
+```
+
+Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0
+```
+
+Follow the printed PATH line. `goshikq --version` prints `goshikq 1.0.0`. Then start `goshikq-server` with `DATABASE_URL=embedded`, `GOSHIKQ_AUTH_MODE=none`, and `GOSHIKQ_BIND=127.0.0.1:7400`. `curl -fsS http://127.0.0.1:7400/health` includes `"version":"1.0.0"`.
+
+Python, after the server is healthy:
+
+```bash
+python -m pip install -e sdk/python
+python examples/hello-agent/main.py
+```
+
+Expected: `verification:  VERIFIED`. TypeScript builds with `cd sdk/typescript && bun install && bun run build`. Registry commands stay off until [the publication switch](../release/v1.0.1-publication-switch.md).
+
 From-source install below was tested on Windows x64 (MSVC) with PostgreSQL on `127.0.0.1:55432`.
 
 ## Runtime

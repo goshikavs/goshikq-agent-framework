@@ -1,7 +1,7 @@
 # Prepared only. Does not run on push or pull request.
-# An owner must dispatch it with confirm=PUBLISH and a tag whose
-# @goshikq/sdk version is 1.0.1 or newer and matches the tag.
-# The GitHub environment "npm" must be a trusted publisher for the scope.
+# An owner must dispatch it with confirm=PUBLISH and an existing tag.
+# The tag must already be on main. The GitHub environment "npm" must have
+# a required reviewer and an npm trusted publisher for @goshikq/sdk.
 # This file stores no registry token.
 
 name: Publish TypeScript SDK
@@ -14,23 +14,27 @@ on:
         required: true
         type: string
       tag:
-        description: Existing git tag to publish, for example v1.0.1
+        description: Existing git tag on main, for example v1.0.1
         required: true
         type: string
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
     if: github.event.inputs.confirm == 'PUBLISH'
     runs-on: ubuntu-24.04
     environment: npm
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag }}
+          ref: refs/tags/${{ inputs.tag }}
+          persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -38,14 +42,45 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.4"
-      - name: Refuse a tag that does not match the package
-        run: |
-          node --input-type=module -e "import fs from 'node:fs'; const v=JSON.parse(fs.readFileSync('sdk/typescript/package.json','utf8')).version; const tag=process.env.TAG; if (tag!==v && tag!=='v'+v) { console.error('tag', tag, '!=', v); process.exit(1);} const [a,b,c]=v.split('.').map(Number); if (!(a===1 && b===0 && c>=1)) { console.error('refusing', v); process.exit(1);} "
+      - name: Require a main tag whose package version matches
         env:
           TAG: ${{ inputs.tag }}
-      - name: Build and publish with provenance
         run: |
+          set -eu
+          case "$TAG" in
+            v1.0.*) ;;
+            *) echo "refusing tag $TAG"; exit 1 ;;
+          esac
+          git rev-parse --verify "refs/tags/${TAG}^{commit}" >/dev/null
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/${TAG}^{commit}")"
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main
+          node --input-type=module -e "import fs from 'node:fs'; const v=JSON.parse(fs.readFileSync('sdk/typescript/package.json','utf8')).version; const tag=process.env.TAG; if (tag!=='v'+v && tag!==v) process.exit(1); const [a,b,c]=v.split('.'); if (!(a==='1' && b==='0' && Number(c)>=1)) { console.error('refusing', v); process.exit(1);} fs.appendFileSync(process.env.GITHUB_ENV, 'PACKAGE_VERSION='+v+'\n'); console.log(v, 'matches', tag);"
+      - name: Build and inspect the tarball
+        run: |
+          set -eu
           bun install --frozen-lockfile
           bun --filter @goshikq/sdk build
+          test -f sdk/typescript/dist/index.js
+          test -f sdk/typescript/dist/index.d.ts
+          test -f sdk/typescript/dist/index.js.map
           cd sdk/typescript
-          npm publish --access public --provenance
+          npm pack
+          tar -tzf goshikq-sdk-${PACKAGE_VERSION}.tgz | grep -E 'dist/index\.(js|d\.ts)$'
+          sha256sum "goshikq-sdk-${PACKAGE_VERSION}.tgz"
+          rm -f "goshikq-sdk-${PACKAGE_VERSION}.tgz"
+      - name: Refuse an existing npm version
+        run: |
+          set -eu
+          if npm view "@goshikq/sdk@${PACKAGE_VERSION}" version > /tmp/npm-view.out 2> /tmp/npm-view.err; then
+            echo "refusing to overwrite @goshikq/sdk@${PACKAGE_VERSION}"
+            exit 1
+          fi
+          if ! grep -q "404" /tmp/npm-view.err; then
+            echo "unexpected npm view result"
+            cat /tmp/npm-view.err
+            exit 1
+          fi
+      - name: Publish with provenance
+        working-directory: sdk/typescript
+        run: npm publish --access public --provenance
