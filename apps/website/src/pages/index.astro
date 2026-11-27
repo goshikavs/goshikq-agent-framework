@@ -1,5 +1,6 @@
 ---
 import Marketing from "../layouts/Marketing.astro";
+import InstallJourney from "../components/InstallJourney.astro";
 import Shot from "../components/Shot.astro";
 import VerifyDemo from "../components/VerifyDemo.astro";
 import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
@@ -28,10 +29,7 @@ const capabilities = [
       <a class="btn btn-secondary" href={SITE.githubPrerelease}>v1.0.0 release</a>
       <a class="btn btn-ghost" href={SITE.github}>View on GitHub</a>
     </div>
-    <pre class="install"><code>git clone {SITE.githubGit}
-cd goshikq-agent-framework
-sh scripts/install.sh --version v1.0.0
-# Windows: powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0</code></pre>
+    <p><a href={withBase("/#install")}>Install Goshikq {SITE.version}</a></p>
     <Shot
       eager
       src="/media/studio/goshikq-studio-dashboard.webp"
@@ -40,19 +38,12 @@ sh scripts/install.sh --version v1.0.0
     />
   </section>
 
-  <section class="section" id="get-started">
+  <section class="section" id="install">
     <div class="wrap">
-      <h2>Get started</h2>
-      <p class="lede">The runtime and the SDK are separate. Latest stable runtime: GitHub Release v1.0.0. Python and TypeScript packages install from a clone until the owner publishes them.</p>
-      <ol class="steps">
-        <li class="step"><strong>Select</strong><span>Windows, macOS, or Linux on the install page.</span></li>
-        <li class="step"><strong>Install</strong><span>Run <code>scripts/install.sh</code> or <code>scripts/install.ps1</code> for v1.0.0.</span></li>
-        <li class="step"><strong>Verify</strong><span><code>goshikq --version</code> prints <code>goshikq 1.0.0</code>.</span></li>
-        <li class="step"><strong>Start</strong><span>Start <code>goshikq-server</code> and open <code>/health</code>.</span></li>
-        <li class="step"><strong>Run</strong><span>Install the Python SDK from the clone and run hello-agent.</span></li>
-        <li class="step"><strong>Outcome</strong><span>The example prints <code>verification: VERIFIED</code>.</span></li>
-      </ol>
-      <p><a class="btn btn-primary" href={withBase("/download/")}>Installation steps</a> <a class="btn btn-secondary" href={withBase("/quickstart/")}>Quickstart</a></p>
+      <h2>Install Goshikq</h2>
+      <p class="lede">Stable runtime: GitHub Release v1.0.0. Choose an operating system for the runtime, or a language for the SDK. The SDK is a separate install and talks to that runtime. PyPI and npm packages are not available.</p>
+      <InstallJourney />
+      <p><a class="btn btn-primary" href={withBase("/download/")}>All install options</a> <a class="btn btn-secondary" href={withBase("/docs/installation/")}>Installation guide</a> <a href={withBase("/docs/troubleshooting/")}>Troubleshooting</a></p>
     </div>
   </section>
 

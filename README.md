@@ -27,7 +27,7 @@ Goshikq is an open-source AI agent framework with a Rust runtime for durable exe
 
 ## Quick start
 
-The runtime and the SDK are different installs. The commands below use the published **v1.0.0** runtime. Python `goshikq-ai` and TypeScript `@goshikq/sdk` are installed from this clone. They are not registry packages yet. Details: [installation guide](docs/guides/installation.md) and the [install page](https://goshikavs.github.io/goshikq-agent-framework/download/).
+The runtime and the SDK are different installs. The commands below use the published **v1.0.0** runtime. Python `goshikq-ai` and TypeScript `@goshikq/sdk` are installed from this clone. They are not registry packages yet. Details: [installation guide](docs/guides/installation.md), the [install page](https://goshikavs.github.io/goshikq-agent-framework/download/), and [GitHub Release v1.0.0](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0).
 
 ```bash
 git clone https://github.com/goshikavs/goshikq-agent-framework.git
@@ -80,6 +80,8 @@ bun run build
 ```
 
 Node.js 20+ imports the built ESM. CommonJS `require()` is not supported. Bun 1.4.4 runs the same build.
+
+Troubleshooting: [`docs/troubleshooting.md`](docs/troubleshooting.md) and the [website troubleshooting page](https://goshikavs.github.io/goshikq-agent-framework/docs/troubleshooting/).
 
 ## Why Goshikq?
 

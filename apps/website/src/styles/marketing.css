@@ -314,11 +314,28 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.72); }
   min-height: 2.4rem;
 }
 .journey .panel { display: none; }
-.journey:has(#os-linux:checked) .panel-linux,
-.journey:has(#os-macos:checked) .panel-macos,
-.journey:has(#os-windows:checked) .panel-windows,
-.journey:has(#lang-python:checked) .panel-python,
-.journey:has(#lang-typescript:checked) .panel-typescript { display: block; }
+.journey:has(#tab-linux:checked) .panel-linux,
+.journey:has(#tab-macos:checked) .panel-macos,
+.journey:has(#tab-windows:checked) .panel-windows,
+.journey:has(#tab-python:checked) .panel-python,
+.journey:has(#tab-typescript:checked) .panel-typescript { display: block; }
+.install-tabs label {
+  border: 1px solid var(--gk-line);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  min-height: 2.5rem;
+}
+.install-tabs label:has(input:checked) {
+  background: var(--gk-accent);
+  color: var(--gk-verify-ink);
+  border-color: transparent;
+}
+.install-tabs input { accent-color: var(--gk-verify-ink); }
+.install-tabs input:focus-visible,
+.copy-block button:focus-visible {
+  outline: 2px solid var(--gk-accent);
+  outline-offset: 2px;
+}
 .copy-block { position: relative; }
 .copy-block button {
   position: absolute;

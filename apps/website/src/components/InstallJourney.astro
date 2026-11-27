@@ -1,132 +1,167 @@
 ---
 /**
- * Commands shown here are the ones the install scripts and hello-agent example accept.
- * Registry installs are omitted until the owner publishes them.
+ * One tab shows at a time. Commands are the install scripts and examples that CI runs.
+ * PyPI and npm commands stay off this component until those packages exist.
  */
 ---
 <div class="journey">
-  <fieldset>
-    <legend>Platform</legend>
-    <label><input type="radio" name="gk-os" id="os-linux" checked /> Linux</label>
-    <label><input type="radio" name="gk-os" id="os-macos" /> macOS</label>
-    <label><input type="radio" name="gk-os" id="os-windows" /> Windows</label>
-  </fieldset>
-  <fieldset>
-    <legend>SDK</legend>
-    <label><input type="radio" name="gk-lang" id="lang-python" checked /> Python</label>
-    <label><input type="radio" name="gk-lang" id="lang-typescript" /> TypeScript / JavaScript</label>
+  <fieldset class="install-tabs">
+    <legend>Install target</legend>
+    <label><input type="radio" name="gk-install" id="tab-linux" checked /> Linux</label>
+    <label><input type="radio" name="gk-install" id="tab-macos" /> macOS</label>
+    <label><input type="radio" name="gk-install" id="tab-windows" /> Windows</label>
+    <label><input type="radio" name="gk-install" id="tab-python" /> Python</label>
+    <label><input type="radio" name="gk-install" id="tab-typescript" /> TypeScript / JavaScript</label>
   </fieldset>
 
   <div class="panel panel-linux">
     <h2>Linux runtime</h2>
-    <p>The installer downloads the v1.0.0 GitHub Release for the CPU, checks SHA256SUMS, and prints a PATH line. It does not install a language SDK.</p>
-    <div class="copy-block">
-      <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
+    <p>Recommended install: the script in a clone of this repository. It is not a remote shell pipe. It downloads the v1.0.0 GitHub Release for this CPU and stops if SHA256SUMS does not match. It does not install a language SDK. The manual alternative is to download the archive and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
+    <ol>
+      <li>
+        <p>Install the runtime.</p>
+        <div class="copy-block">
+          <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
 cd goshikq-agent-framework
 sh scripts/install.sh --version v1.0.0</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Use the <code>export PATH=...</code> line the script prints, then check the version. Expected text: <code>goshikq 1.0.0</code>.</p>
-    <div class="copy-block">
-      <pre class="install"><code>goshikq --version</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Start the runtime with the embedded database. This is a local development setting. Production needs a real <code>DATABASE_URL</code> and must not use <code>GOSHIKQ_AUTH_MODE=none</code>.</p>
-    <div class="copy-block">
-      <pre class="install"><code>DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <div class="copy-block">
-      <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+          <button type="button" data-copy>Copy</button>
+        </div>
+      </li>
+      <li>
+        <p>Use the <code>export PATH</code> line the script prints, then verify. Expected text: <code>goshikq 1.0.0</code>.</p>
+        <div class="copy-block">
+          <pre class="install"><code>goshikq --version</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+      </li>
+      <li>
+        <p>Start the local runtime. <code>DATABASE_URL=embedded</code> downloads PostgreSQL on first start and keeps it under <code>.goshikq/postgres</code> unless <code>GOSHIKQ_EMBEDDED_PG_DIR</code> is set. That first download needs network access. <code>GOSHIKQ_AUTH_MODE=none</code> is only for this local process. Production needs a real database URL and real authentication.</p>
+        <div class="copy-block">
+          <pre class="install"><code>DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <div class="copy-block">
+          <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>. Leave the server running, then open the Python tab for the agent.</p>
+      </li>
+    </ol>
   </div>
 
   <div class="panel panel-macos">
     <h2>macOS runtime</h2>
-    <p>The same installer selects the Apple Silicon or Intel archive. It does not install a language SDK.</p>
-    <div class="copy-block">
-      <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
+    <p>The same clone script selects the Apple Silicon or Intel v1.0.0 archive and checks SHA256SUMS. It does not install a language SDK. You can instead download the archive and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
+    <ol>
+      <li>
+        <p>Install the runtime.</p>
+        <div class="copy-block">
+          <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
 cd goshikq-agent-framework
 sh scripts/install.sh --version v1.0.0</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Use the printed PATH line. Expected version text: <code>goshikq 1.0.0</code>.</p>
-    <div class="copy-block">
-      <pre class="install"><code>goshikq --version</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <div class="copy-block">
-      <pre class="install"><code>DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <div class="copy-block">
-      <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+          <button type="button" data-copy>Copy</button>
+        </div>
+      </li>
+      <li>
+        <p>Use the printed PATH line. Expected text: <code>goshikq 1.0.0</code>.</p>
+        <div class="copy-block">
+          <pre class="install"><code>goshikq --version</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+      </li>
+      <li>
+        <p>Start the runtime. The first <code>DATABASE_URL=embedded</code> start downloads PostgreSQL into <code>.goshikq/postgres</code>. Production must not use <code>GOSHIKQ_AUTH_MODE=none</code>.</p>
+        <div class="copy-block">
+          <pre class="install"><code>DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <div class="copy-block">
+          <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+      </li>
+    </ol>
   </div>
 
   <div class="panel panel-windows">
     <h2>Windows runtime</h2>
-    <p>Windows AMD64 is the supported archive. The ARM64 Windows build is called out below the archive table. The script checks SHA256SUMS and prints a PATH line. It does not install a language SDK.</p>
-    <div class="copy-block">
-      <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
+    <p>Windows AMD64 is the supported archive. The script checks SHA256SUMS and prints a PATH line. It does not install a language SDK. You can instead download the zip and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
+    <ol>
+      <li>
+        <p>Install the runtime.</p>
+        <div class="copy-block">
+          <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
 cd goshikq-agent-framework
 powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Use the PATH line the script prints. Expected version text: <code>goshikq 1.0.0</code>.</p>
-    <div class="copy-block">
-      <pre class="install"><code>goshikq --version</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <div class="copy-block">
-      <pre class="install"><code>$env:DATABASE_URL="embedded"
+          <button type="button" data-copy>Copy</button>
+        </div>
+      </li>
+      <li>
+        <p>Use the PATH line the script prints. Expected text: <code>goshikq 1.0.0</code>.</p>
+        <div class="copy-block">
+          <pre class="install"><code>goshikq --version</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+      </li>
+      <li>
+        <p>Start the runtime. The first embedded database start downloads PostgreSQL. Production must not use <code>GOSHIKQ_AUTH_MODE=none</code>.</p>
+        <div class="copy-block">
+          <pre class="install"><code>$env:DATABASE_URL="embedded"
 $env:GOSHIKQ_AUTH_MODE="none"
 $env:GOSHIKQ_BIND="127.0.0.1:7400"
 goshikq-server</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <div class="copy-block">
-      <pre class="install"><code>curl.exe -fsS http://127.0.0.1:7400/health</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <div class="copy-block">
+          <pre class="install"><code>curl.exe -fsS http://127.0.0.1:7400/health</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+      </li>
+    </ol>
   </div>
 
   <div class="panel panel-python">
     <h2>Python SDK</h2>
-    <p>Install the SDK from this clone after the runtime is healthy. <code>goshikq-ai</code> is not on PyPI. CPython 3.11 through 3.14.</p>
-    <div class="copy-block">
-      <pre class="install"><code>python -m pip install -e sdk/python
+    <p>The SDK connects your program to a Goshikq runtime that is already installed and healthy. It is not the runtime. <code>goshikq-ai</code> is not on PyPI, so there is no registry install command here. CPython 3.11 through 3.14. No paid model key is required.</p>
+    <ol>
+      <li>
+        <p>Install the SDK from this clone and run the first agent. The mock model must call <code>record_greeting</code>. A sentence about Ada is not the outcome.</p>
+        <div class="copy-block">
+          <pre class="install"><code>python -m pip install -e sdk/python
 python examples/hello-agent/main.py</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Expected lines include <code>status: COMPLETED</code> and <code>verification: VERIFIED</code>.</p>
-    <p>The retail example checks a store snapshot, not the processor's accepted response:</p>
-    <div class="copy-block">
-      <pre class="install"><code>python examples/retail-refund/main.py</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Expected verification: <code>VERIFIED</code> when the simulated order is refunded and the refund is settled.</p>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <p>Expected lines:</p>
+        <pre class="install"><code>status:        COMPLETED
+verification:  VERIFIED</code></pre>
+      </li>
+      <li>
+        <p>Check an independent outcome. This example reads a store snapshot. A processor response of accepted is not verification.</p>
+        <div class="copy-block">
+          <pre class="install"><code>python examples/retail-refund/main.py</code></pre>
+          <button type="button" data-copy>Copy</button>
+        </div>
+        <p>Expected verification: <code>VERIFIED</code> when the simulated order is refunded and the refund is settled.</p>
+      </li>
+    </ol>
   </div>
 
   <div class="panel panel-typescript">
     <h2>TypeScript / JavaScript SDK</h2>
-    <p>Build <code>@goshikq/sdk</code> from this clone. It is not on npm. The package is ESM for Node.js 20+ and Bun. CommonJS <code>require()</code> is not supported.</p>
+    <p>The SDK connects your program to a Goshikq runtime that is already installed and healthy. <code>@goshikq/sdk</code> is not on npm, so there is no registry install command here. The tested setup builds ESM for Node.js 20+ and Bun. CommonJS <code>require()</code> is not supported.</p>
     <div class="copy-block">
       <pre class="install"><code>cd sdk/typescript
 bun install
 bun run build</code></pre>
       <button type="button" data-copy>Copy</button>
     </div>
-    <p>A consumer imports the built JavaScript. Start <code>goshikq-server</code> before <code>Runtime.run</code>.</p>
     <div class="copy-block">
       <pre class="install"><code>import &#123; Agent, Goal, Runtime &#125; from "@goshikq/sdk";</code></pre>
       <button type="button" data-copy>Copy</button>
     </div>
+    <p>Start <code>goshikq-server</code> before <code>Runtime.run</code>. The first verified agent in this repository is the Python hello-agent on the Python tab. Its expected verification status is <code>VERIFIED</code>.</p>
   </div>
 </div>
 
