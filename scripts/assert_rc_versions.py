@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Require stable package versions and the published v1.0.0 GitHub Release.
 
-The published runtime and website stay on stable `1.0.0`.
+The published GitHub Release and website stay on stable `1.0.0`.
+The workspace version is `1.0.1` so a future v1.0.1 release build reports that version.
+Do not point public downloads at v1.0.1 until that release and its SHA256SUMS exist.
 The Python and TypeScript SDKs prepared on this branch are `1.0.1` and are not on PyPI or npm.
 Public downloads point at the stable GitHub Release. rc.1 and rc.2 stay published.
 """
@@ -14,7 +16,7 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CARGO = "1.0.0"
+CARGO = "1.0.1"
 NPM = "1.0.0"
 SDK_NPM = "1.0.1"
 PY = "1.0.1"

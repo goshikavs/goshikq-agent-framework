@@ -6,11 +6,12 @@ This policy applies to the v1.0 line. It is not a promise that every future mino
 
 | Piece | Identifier | Must match the runtime number? |
 |---|---|---|
-| GitHub Release / CLI / `goshikq-server` | `v1.0.0` today | This is the runtime |
-| Protocol `SCHEMA_VERSION` | `1.0` | SDKs speak this protocol |
-| Python `goshikq-ai` | `1.0.1` prepared, unpublished | No. A 1.0.x SDK may talk to a 1.0.x runtime when `SCHEMA_VERSION` is `1.0` |
-| TypeScript `@goshikq/sdk` | `1.0.1` prepared, unpublished | Same as Python |
-| Rust crates | workspace `1.0.0`, `publish = false` | Not a published library |
+| Published GitHub Release | `v1.0.0` | Installers download this archive. Its CLI and `/health` report `1.0.0` |
+| Workspace source for the next release build | `1.0.1` | `goshikq --version` and `/health` use `CARGO_PKG_VERSION`. A tag named v1.0.1 built from this source reports `1.0.1` |
+| Protocol `SCHEMA_VERSION` | `1.0` | Unchanged. SDK 1.0.1 may talk to runtime 1.0.0 and 1.0.1 |
+| Python `goshikq-ai` | `1.0.1` prepared, unpublished | No numerical match with the runtime is required |
+| TypeScript `@goshikq/sdk` | `1.0.1` prepared, unpublished | Same as Python. ESM only. Node.js 20+ |
+| Rust crates | workspace `1.0.1`, `publish = false` | Not a published library |
 
 Patch releases of an SDK may add packaging, docs, and compatible bug fixes. They must not remove or rename public SDK exports that v1.0.0 examples use (`Agent`, `Goal`, `Runtime`, `tool` / `defineTool`, goal verification fields).
 

@@ -17,7 +17,12 @@ rm -rf "$dest" "$pg"
 mkdir -p "$base"
 
 echo "INSTALL_SMOKE platform=$(uname -s) $(uname -m)"
-sh "$root/scripts/install.sh" --version v1.0.0 --dest "$dest"
+clean="$base/goshikq-installer-clean-$stamp"
+rm -rf "$clean"
+mkdir -p "$clean"
+cp "$root/scripts/install.sh" "$clean/install.sh"
+# The installer runs outside the checkout and must not read repository files.
+( cd "$clean" && sh ./install.sh --version v1.0.0 --dest "$dest" )
 server=$(find "$dest" -type f -name goshikq-server | head -n 1)
 if [ -z "$server" ]; then
   echo "installer did not produce goshikq-server" >&2
@@ -29,7 +34,7 @@ grep -F "goshikq 1.0.0" "$base/goshikq-version.txt"
 
 printf 'corrupt' > "$bad"
 if GOSHIKQ_CHECK_FILE="$bad" GOSHIKQ_CHECK_EXPECTED="0000000000000000000000000000000000000000000000000000000000000000" \
-  sh "$root/scripts/install.sh"
+  sh "$clean/install.sh"
 then
   echo "checksum mismatch was accepted" >&2
   exit 1
@@ -79,15 +84,49 @@ if command -v python3 >/dev/null 2>&1; then
 else
   PY=python
 fi
-"$PY" -m venv "$base/sdk-venv"
-"$base/sdk-venv/bin/python" -m pip install -e "$root/sdk/python"
-"$base/sdk-venv/bin/python" "$root/examples/hello-agent/main.py" | tee "$agent_out"
+hello=$(find "$dest" -type f -name hello_agent.py | head -n 1)
+if [ -z "$hello" ]; then
+  echo "installer did not write hello_agent.py" >&2
+  exit 1
+fi
+case "$hello" in
+  "$root"/*) echo "quickstart was written inside the repository" >&2; exit 1 ;;
+esac
+"$PY" "$hello" | tee "$agent_out"
 grep -F "verification:  VERIFIED" "$agent_out"
+
+outside="$base/goshikq-py-consumer-$stamp"
+"$PY" -m venv "$outside/venv"
+"$outside/venv/bin/python" -m pip install -U pip build hatchling
+"$outside/venv/bin/python" -m build --wheel --outdir "$outside/dist" "$root/sdk/python"
+"$outside/venv/bin/python" -m pip install "$outside"/dist/goshikq_ai-*.whl
+cp "$root/examples/quickstart/sdk_hello.py" "$outside/sdk_hello.py"
+( cd "$outside" && ./venv/bin/python sdk_hello.py ) | tee "$base/goshikq-sdk-hello.txt"
+grep -F "verification:  VERIFIED" "$base/goshikq-sdk-hello.txt"
+
+if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+  ts="$base/goshikq-ts-consumer-$stamp"
+  mkdir -p "$ts/pack" "$ts/app" "$ts/src"
+  # Copy the package out of the monorepo so npm does not see workspace: dependencies.
+  cp "$root/sdk/typescript/package.json" "$root/sdk/typescript/tsconfig.json" "$root/sdk/typescript/tsconfig.build.json" "$ts/src/"
+  cp -R "$root/sdk/typescript/src" "$ts/src/src"
+  if [ -f "$root/sdk/typescript/README.md" ]; then cp "$root/sdk/typescript/README.md" "$ts/src/"; fi
+  if [ -f "$root/sdk/typescript/LICENSE" ]; then cp "$root/sdk/typescript/LICENSE" "$ts/src/"; fi
+  ( cd "$ts/src" && npm install && npm pack --pack-destination "$ts/pack" )
+  tgz=$(find "$ts/pack" -name '*.tgz' | head -n 1)
+  printf '%s\n' '{"name":"goshikq-node-consumer","private":true,"type":"module"}' > "$ts/app/package.json"
+  ( cd "$ts/app" && npm install "$tgz" )
+  cp "$root/examples/quickstart/hello.mjs" "$ts/app/hello.mjs"
+  ( cd "$ts/app" && node hello.mjs ) | tee "$base/goshikq-node-hello.txt"
+  grep -F "verification:  VERIFIED" "$base/goshikq-node-hello.txt"
+else
+  echo "TYPESCRIPT_CONSUMER_SKIPPED node or npm missing"
+fi
 
 cleanup
 trap - EXIT
 rm -rf "$dest"
-sh "$root/scripts/install.sh" --version v1.0.0 --dest "$dest"
+( cd "$clean" && sh ./install.sh --version v1.0.0 --dest "$dest" )
 server=$(find "$dest" -type f -name goshikq-server | head -n 1)
 bin=$(dirname "$server")
 "$bin/goshikq" --version | grep -F "goshikq 1.0.0"
