@@ -28,14 +28,52 @@ bun run dev
 # http://127.0.0.1:3000
 ```
 
-## SDKs (local, unpublished)
+## Python
+
+What you install: `goshikq-ai`, the SDK. It is not the runtime.
 
 ```text
-pip install -e sdk/python
-cd sdk/typescript && bun install
+python -m pip install -e sdk/python
 ```
 
-Do not publish packages without owner authorization.
+That command is the verified install. `pip install goshikq-ai` does not work yet. The prepared package version is 1.0.1. CPython 3.11–3.14. Start `goshikq-server` first. `Runtime.run_sync` prints a status and a verification status. `VERIFIED` requires a goal predicate, not a successful tool return.
+
+Troubleshooting: an import error means the package was not installed from this clone. A connection error means `goshikq-server` is not reachable at `GOSHIKQ_RUNTIME_URL` (default `http://127.0.0.1:7400`). `COMPLETED` without `VERIFIED` means the goal predicate did not accept the snapshot.
+
+## TypeScript / JavaScript
+
+What you install: `@goshikq/sdk`. Node.js 20+ or Bun. ESM only.
+
+```text
+cd sdk/typescript
+bun install
+bun run build
+```
+
+`npm install @goshikq/sdk` does not work yet. The prepared package version is 1.0.1. A clean consumer imports the built JavaScript:
+
+```javascript
+import { Agent, Goal, Runtime } from "@goshikq/sdk";
+```
+
+CommonJS `require()` is not supported.
+
+Troubleshooting: `npm install @goshikq/sdk` returns 404 until the package is published. `Cannot find module` after a source checkout means `bun run build` has not produced `dist/`. `require()` fails because the package is ESM only.
+
+## Rust / CLI
+
+What you install: the v1.0.0 GitHub Release binaries `goshikq` and `goshikq-server`.
+
+```text
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0
+sh scripts/install.sh --version v1.0.0
+```
+
+crates.io publication is deferred. Workspace crates set `publish = false`. They use path dependencies and are not a stable external Rust library.
+
+Troubleshooting: a SHA256 mismatch means the download is discarded; do not bypass the check. Windows ARM64 prints an experimental warning and is not a supported v1.0 platform. `install.sh` is for macOS and Linux. On this Windows host it is not the installer that was executed.
+
+Do not publish PyPI, npm, or crates.io packages without owner authorization.
 
 ## Three-minute offline quickstart
 

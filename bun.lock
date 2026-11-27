@@ -7,7 +7,7 @@
     },
     "apps/studio": {
       "name": "@goshikq/studio",
-      "version": "1.0.0-rc.1",
+      "version": "1.0.0",
       "dependencies": {
         "@monaco-editor/react": "^4.7.0",
         "@tanstack/react-query": "^5.90.0",
@@ -34,18 +34,18 @@
     },
     "examples/mcp-inventory-server": {
       "name": "goshikq-mcp-inventory-server",
-      "version": "1.0.0-rc.1",
+      "version": "1.0.0",
     },
     "examples/typescript-mcp-agent": {
       "name": "typescript-mcp-agent",
-      "version": "1.0.0-rc.1",
+      "version": "1.0.0",
       "dependencies": {
         "@goshikq/sdk": "workspace:*",
       },
     },
     "examples/typescript-refund-agent": {
       "name": "typescript-refund-agent",
-      "version": "1.0.0-rc.1",
+      "version": "1.0.0",
       "dependencies": {
         "@goshikq/sdk": "workspace:*",
         "zod": "4.6.7",
@@ -56,19 +56,20 @@
     },
     "sdk/typescript": {
       "name": "@goshikq/sdk",
-      "version": "1.0.0-rc.1",
+      "version": "1.0.1",
       "dependencies": {
         "zod": "4.6.7",
       },
       "devDependencies": {
         "@modelcontextprotocol/sdk": "^1.32.2",
         "@types/bun": "^1.2.0",
+        "@types/node": "^22.0.0",
         "typescript": "^5.9.2",
       },
     },
     "templates/typescript-agent": {
       "name": "goshikq-typescript-agent",
-      "version": "1.0.0-rc.1",
+      "version": "1.0.0",
       "dependencies": {
         "@goshikq/sdk": "workspace:*",
         "zod": "4.6.7",

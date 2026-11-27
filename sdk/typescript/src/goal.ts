@@ -1,5 +1,5 @@
-import { ConfigurationError } from "./errors.ts";
-import { StateSnapshot } from "./state.ts";
+import { ConfigurationError } from "./errors.js";
+import { StateSnapshot } from "./state.js";
 
 export type VerificationPolicy = "required" | "optional" | "none";
 

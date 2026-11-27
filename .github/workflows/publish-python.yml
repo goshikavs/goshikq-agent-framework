@@ -1,0 +1,56 @@
+# Prepared only. Does not run on push or pull request.
+# An owner must dispatch it with confirm=PUBLISH and a tag whose Python
+# package version is 1.0.1 or newer and matches the tag.
+# The GitHub environment "pypi" must be a trusted publisher for goshikq-ai.
+# This file stores no registry token.
+
+name: Publish Python SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PUBLISH to upload. Any other value skips the job.
+        required: true
+        type: string
+      tag:
+        description: Existing git tag to publish, for example v1.0.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.event.inputs.confirm == 'PUBLISH'
+    runs-on: ubuntu-24.04
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Refuse a tag that does not match the package
+        run: |
+          python - <<'PY'
+          import pathlib, tomllib
+          version = tomllib.loads(pathlib.Path("sdk/python/pyproject.toml").read_text())["project"]["version"]
+          tag = "${{ inputs.tag }}"
+          if tag not in {version, f"v{version}"}:
+              raise SystemExit(f"tag {tag} does not match python package {version}")
+          parts = version.split(".")
+          if len(parts) < 3 or parts[0] != "1" or parts[1] != "0" or int(parts[2]) < 1:
+              raise SystemExit(f"refusing to publish {version}; v1.0.0 stays the existing release")
+          print(f"package {version} matches {tag}")
+          PY
+      - name: Build
+        run: |
+          python -m pip install build
+          python -m build sdk/python --outdir dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist

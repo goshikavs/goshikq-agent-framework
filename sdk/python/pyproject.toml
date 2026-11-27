@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "goshikq-ai"
-version = "1.0.0"
+version = "1.0.1"
 description = "Python SDK for Goshikq, the outcome-driven AI agent framework"
 readme = "README.md"
 license = "Apache-2.0"
@@ -44,7 +44,7 @@ packages = ["src/goshikq_ai"]
 "src/goshikq_ai" = "goshikq_ai"
 
 [tool.hatch.build.targets.sdist]
-include = ["src/goshikq_ai", "README.md", "tests"]
+include = ["src/goshikq_ai", "README.md", "LICENSE", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

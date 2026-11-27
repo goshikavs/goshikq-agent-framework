@@ -1,0 +1,51 @@
+# Prepared only. Does not run on push or pull request.
+# An owner must dispatch it with confirm=PUBLISH and a tag whose
+# @goshikq/sdk version is 1.0.1 or newer and matches the tag.
+# The GitHub environment "npm" must be a trusted publisher for the scope.
+# This file stores no registry token.
+
+name: Publish TypeScript SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PUBLISH to upload. Any other value skips the job.
+        required: true
+        type: string
+      tag:
+        description: Existing git tag to publish, for example v1.0.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.event.inputs.confirm == 'PUBLISH'
+    runs-on: ubuntu-24.04
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Refuse a tag that does not match the package
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; const v=JSON.parse(fs.readFileSync('sdk/typescript/package.json','utf8')).version; const tag=process.env.TAG; if (tag!==v && tag!=='v'+v) { console.error('tag', tag, '!=', v); process.exit(1);} const [a,b,c]=v.split('.').map(Number); if (!(a===1 && b===0 && c>=1)) { console.error('refusing', v); process.exit(1);} "
+        env:
+          TAG: ${{ inputs.tag }}
+      - name: Build and publish with provenance
+        run: |
+          bun install --frozen-lockfile
+          bun --filter @goshikq/sdk build
+          cd sdk/typescript
+          npm publish --access public --provenance

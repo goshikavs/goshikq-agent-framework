@@ -141,7 +141,54 @@ macOS and Linux, from a clone:
 sh scripts/install.sh --version v1.0.0
 ```
 
-The installer puts `goshikq` and `goshikq-server` on a user bin directory and prints the PATH line. It does not install the Python SDK. The SDK is not on PyPI; install it from this repository with `python -m pip install -e sdk/python`.
+The installer puts `goshikq` and `goshikq-server` on a user bin directory and prints the PATH line. It installs the **runtime and CLI**, not a language SDK.
+
+### Python SDK
+
+What you install: the `goshikq-ai` package, which talks to a running `goshikq-server`. It does not contain the runtime.
+
+Verified command today, from a clone:
+
+```bash
+python -m pip install -e sdk/python
+```
+
+`pip install goshikq-ai` is **not** available. Package `1.0.1` is prepared and unpublished. Python support is CPython 3.11 through 3.14. The runtime must be reachable at `GOSHIKQ_RUNTIME_URL` (default `http://127.0.0.1:7400`).
+
+```python
+from goshikq_ai import Agent, Goal, Runtime
+from goshikq_ai.models import MockModel, ModelTurn
+
+agent = Agent(name="hello", model=MockModel(script=[ModelTurn(content="done")]))
+result = Runtime(agent).run_sync(Goal(description="Say hello"))
+print(result.status, result.verification_status)
+```
+
+A goal is `VERIFIED` only when its predicate accepts an authoritative snapshot. A finished tool call is not that result. If import fails, install from `sdk/python` in this repository rather than from PyPI.
+
+### TypeScript and JavaScript SDK
+
+What you install: `@goshikq/sdk`, an ESM package for Node.js 20+ and Bun. It is not a runtime.
+
+Verified command today, from a clone, after `bun install` inside `sdk/typescript`:
+
+```bash
+cd sdk/typescript && bun install && bun run build
+```
+
+`npm install @goshikq/sdk` is **not** available. Package `1.0.1` is prepared and unpublished. The package entry is ESM (`import`), with TypeScript declarations. CommonJS `require()` is not supported. A consumer that installs the packed tarball imports JavaScript directly:
+
+```javascript
+import { Agent, Goal, Runtime, MockModel } from "@goshikq/sdk";
+```
+
+Bun can run the same import. Both were tested from a clean project outside the repository on this branch. Point `GOSHIKQ_RUNTIME_URL` at the runtime before `Runtime.run`.
+
+### Rust CLI
+
+What you install: the `goshikq` and `goshikq-server` binaries from the **v1.0.0** GitHub Release. The crates are not on crates.io. Internal crates set `publish = false` because they are path-linked workspace crates, not a supported external Rust library API.
+
+Windows ARM64 is experimental. On the machine that prepared this branch, `scripts/install.ps1 -Version v1.0.0` installed `goshikq-1.0.0-windows-arm64.zip`, the SHA256 matched the published `SHA256SUMS` entry, and `goshikq --version` printed `goshikq 1.0.0`. Linux, macOS, and Windows x64 archives were not installed on that host. `scripts/install.sh` was not executed.
 
 ## Quickstart (no paid API keys)
 

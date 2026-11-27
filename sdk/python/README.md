@@ -4,7 +4,7 @@ Python SDK for [Goshikq](https://github.com/goshikavs/goshikq-agent-framework), 
 model-independent AI agent framework. The SDK declares agents, goals, and tool contracts; the
 Goshikq Rust runtime owns execution, policy enforcement, persistence, and verification.
 
-Status: `1.0.0` in tree (not on PyPI). The public GitHub Release is `v1.0.0`. `v1.0.0-rc.1` is superseded due to its older JWT dependency. `v1.0.0-rc.2` remains published.
+Status: package `1.0.1` is prepared in this branch and is **not on PyPI**. The published stable runtime remains GitHub Release `v1.0.0`. `v1.0.0-rc.1` is superseded due to its older JWT dependency. `v1.0.0-rc.2` remains published. Do not run `pip install goshikq-ai` until an owner publishes the package.
 
 ## Install
 

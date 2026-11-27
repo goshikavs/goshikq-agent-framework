@@ -1,9 +1,9 @@
-import { Agent } from "./agent.ts";
-import { Goal } from "./goal.ts";
-import { ExecutionResult } from "./result.ts";
-import { Runtime, type RuntimeOptions } from "./runtime.ts";
-import { StateProvider } from "./state.ts";
-import { SOURCE_FRAMEWORK } from "./version.ts";
+import { Agent } from "./agent.js";
+import { Goal } from "./goal.js";
+import { ExecutionResult } from "./result.js";
+import { Runtime, type RuntimeOptions } from "./runtime.js";
+import { StateProvider } from "./state.js";
+import { SOURCE_FRAMEWORK } from "./version.js";
 
 export type CoordinationMode = "sequential" | "parallel" | "supervisor";
 export type FailureMode = "fail_fast" | "partial";

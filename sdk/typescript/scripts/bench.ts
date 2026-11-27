@@ -2,7 +2,7 @@
  * Measure TypeScript worker round-trip against a live goshikq-server.
  * Does not claim Bun is faster than Node or Python.
  */
-import { Agent, Goal, MockModel, Runtime, StateSnapshot, defineTool } from "../src/index.ts";
+import { Agent, Goal, MockModel, Runtime, StateSnapshot, defineTool } from "../src/index.js";
 import { z } from "zod";
 
 const base = (process.env.GOSHIKQ_RUNTIME_URL || "http://127.0.0.1:7400").replace(/\/$/, "");

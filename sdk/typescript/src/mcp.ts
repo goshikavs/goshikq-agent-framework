@@ -1,9 +1,9 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { PermissionDeniedError, SchemaValidationError, ToolError } from "./errors.ts";
-import { Evidence, withEvidence } from "./evidence.ts";
-import { jsonable } from "./json.ts";
-import { defineTool, type Effect, type Risk, type Tool, Verifier } from "./tool.ts";
-import { VERSION } from "./version.ts";
+import { PermissionDeniedError, SchemaValidationError, ToolError } from "./errors.js";
+import { Evidence, withEvidence } from "./evidence.js";
+import { jsonable } from "./json.js";
+import { defineTool, type Effect, type Risk, type Tool, Verifier } from "./tool.js";
+import { VERSION } from "./version.js";
 import { z, type ZodType } from "zod";
 
 export type McpTransport =
