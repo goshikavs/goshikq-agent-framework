@@ -79,8 +79,9 @@ if command -v python3 >/dev/null 2>&1; then
 else
   PY=python
 fi
-"$PY" -m pip install -e "$root/sdk/python"
-"$PY" "$root/examples/hello-agent/main.py" | tee "$agent_out"
+"$PY" -m venv "$base/sdk-venv"
+"$base/sdk-venv/bin/python" -m pip install -e "$root/sdk/python"
+"$base/sdk-venv/bin/python" "$root/examples/hello-agent/main.py" | tee "$agent_out"
 grep -F "verification:  VERIFIED" "$agent_out"
 
 cleanup
