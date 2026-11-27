@@ -3,6 +3,42 @@
  * One tab shows at a time. Commands are the install scripts and examples that CI runs.
  * PyPI and npm commands stay off this component until those packages exist.
  */
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+function findExample(name: string): string {
+  const starts = [process.cwd(), dirname(fileURLToPath(import.meta.url))];
+  for (const start of starts) {
+    let dir = start;
+    for (let i = 0; i < 8; i += 1) {
+      const candidate = resolve(dir, "examples", "quickstart", name);
+      if (existsSync(candidate)) return readFileSync(candidate, "utf8");
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  throw new Error(`missing examples/quickstart/${name}`);
+}
+
+const pin = "b830e15efa2f7bd05af0769739c6cab6feb40d97";
+const shHash = "4630175aa8868d58b634df1043abdd0fae425d78c93326401d41e5ed5a752590";
+const psHash = "75fdf00099a9a464fff1e0d54495037cff2d1dc6046a035ad9df2b5ea5f1822f";
+const shUrl = `https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/${pin}/scripts/install.sh`;
+const psUrl = `https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/${pin}/scripts/install.ps1`;
+const linuxInstall = `curl -fsSL -o goshikq-install.sh ${shUrl}
+echo "${shHash}  goshikq-install.sh" | sha256sum -c -
+sh goshikq-install.sh --version v1.0.0`;
+const macosInstall = `curl -fsSL -o goshikq-install.sh ${shUrl}
+echo "${shHash}  goshikq-install.sh" | shasum -a 256 -c -
+sh goshikq-install.sh --version v1.0.0`;
+const windowsInstall = `Invoke-WebRequest -Uri "${psUrl}" -OutFile goshikq-install.ps1
+$actual = (Get-FileHash .\\goshikq-install.ps1 -Algorithm SHA256).Hash.ToLower()
+if ($actual -ne "${psHash}") { throw "SHA256 mismatch: $actual" }
+powershell -ExecutionPolicy Bypass -File .\\goshikq-install.ps1 -Version v1.0.0`;
+const pyExample = findExample("sdk_hello.py");
+const tsExample = findExample("hello.mjs");
 ---
 <div class="journey">
   <fieldset class="install-tabs">
@@ -16,14 +52,12 @@
 
   <div class="panel panel-linux">
     <h2>Linux runtime</h2>
-    <p>Recommended install: the script in a clone of this repository. It is not a remote shell pipe. It downloads the v1.0.0 GitHub Release for this CPU and stops if SHA256SUMS does not match. It does not install a language SDK. The manual alternative is to download the archive and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
+    <p>Recommended install: download the pinned installer, check its SHA256, then run the local file. That is not a remote shell pipe. The script installs both <code>goshikq</code> and <code>goshikq-server</code> from GitHub Release v1.0.0 and stops if <code>SHA256SUMS</code> does not match. It does not install a language SDK. The manual alternative is to download the archive and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
     <ol>
       <li>
         <p>Install the runtime.</p>
         <div class="copy-block">
-          <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
-cd goshikq-agent-framework
-sh scripts/install.sh --version v1.0.0</code></pre>
+          <pre class="install"><code>{linuxInstall}</code></pre>
           <button type="button" data-copy>Copy</button>
         </div>
       </li>
@@ -44,21 +78,19 @@ sh scripts/install.sh --version v1.0.0</code></pre>
           <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
           <button type="button" data-copy>Copy</button>
         </div>
-        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>. Leave the server running, then open the Python tab for the agent.</p>
+        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>. Then run the <code>python3</code> line the installer prints. That file is <code>hello_agent.py</code> next to the binaries. Expected lines include <code>verification:  VERIFIED</code> and <code>evidence:      greetings-memory@1</code>.</p>
       </li>
     </ol>
   </div>
 
   <div class="panel panel-macos">
     <h2>macOS runtime</h2>
-    <p>The same clone script selects the Apple Silicon or Intel v1.0.0 archive and checks SHA256SUMS. It does not install a language SDK. You can instead download the archive and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
+    <p>The same pinned installer selects the Apple Silicon or Intel v1.0.0 archive and checks SHA256SUMS. It installs both executables and does not install a language SDK. You can instead download the archive and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
     <ol>
       <li>
         <p>Install the runtime.</p>
         <div class="copy-block">
-          <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
-cd goshikq-agent-framework
-sh scripts/install.sh --version v1.0.0</code></pre>
+          <pre class="install"><code>{macosInstall}</code></pre>
           <button type="button" data-copy>Copy</button>
         </div>
       </li>
@@ -79,21 +111,19 @@ sh scripts/install.sh --version v1.0.0</code></pre>
           <pre class="install"><code>curl -fsS http://127.0.0.1:7400/health</code></pre>
           <button type="button" data-copy>Copy</button>
         </div>
-        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>. Then run the <code>python3</code> line the installer prints. Expected lines include <code>verification:  VERIFIED</code> and <code>evidence:      greetings-memory@1</code>.</p>
       </li>
     </ol>
   </div>
 
   <div class="panel panel-windows">
     <h2>Windows runtime</h2>
-    <p>Windows AMD64 is the supported archive. The script checks SHA256SUMS and prints a PATH line. It does not install a language SDK. You can instead download the zip and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
+    <p>Windows AMD64 is the supported archive. The pinned script checks SHA256SUMS, installs both executables, and prints a PATH line. It does not install a language SDK. You can instead download the zip and <code>SHA256SUMS</code> from the release and compare the hash yourself.</p>
     <ol>
       <li>
         <p>Install the runtime.</p>
         <div class="copy-block">
-          <pre class="install"><code>git clone https://github.com/goshikavs/goshikq-agent-framework.git
-cd goshikq-agent-framework
-powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0</code></pre>
+          <pre class="install"><code>{windowsInstall}</code></pre>
           <button type="button" data-copy>Copy</button>
         </div>
       </li>
@@ -117,51 +147,27 @@ goshikq-server</code></pre>
           <pre class="install"><code>curl.exe -fsS http://127.0.0.1:7400/health</code></pre>
           <button type="button" data-copy>Copy</button>
         </div>
-        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>.</p>
+        <p>Expected health body includes <code>"status":"ok"</code> and <code>"version":"1.0.0"</code>. Then run the <code>python</code> line the installer prints. Expected lines include <code>verification:  VERIFIED</code> and <code>evidence:      greetings-memory@1</code>.</p>
       </li>
     </ol>
   </div>
 
   <div class="panel panel-python">
     <h2>Python SDK</h2>
-    <p>The SDK connects your program to a Goshikq runtime that is already installed and healthy. It is not the runtime. <code>goshikq-ai</code> is not on PyPI, so there is no registry install command here. CPython 3.11 through 3.14. No paid model key is required.</p>
-    <ol>
-      <li>
-        <p>Install the SDK from this clone and run the first agent. The mock model must call <code>record_greeting</code>. A sentence about Ada is not the outcome.</p>
-        <div class="copy-block">
-          <pre class="install"><code>python -m pip install -e sdk/python
-python examples/hello-agent/main.py</code></pre>
-          <button type="button" data-copy>Copy</button>
-        </div>
-        <p>Expected lines:</p>
-        <pre class="install"><code>status:        COMPLETED
-verification:  VERIFIED</code></pre>
-      </li>
-      <li>
-        <p>Check an independent outcome. This example reads a store snapshot. A processor response of accepted is not verification.</p>
-        <div class="copy-block">
-          <pre class="install"><code>python examples/retail-refund/main.py</code></pre>
-          <button type="button" data-copy>Copy</button>
-        </div>
-        <p>Expected verification: <code>VERIFIED</code> when the simulated order is refunded and the refund is settled.</p>
-      </li>
-    </ol>
+    <p>Install the Python SDK only after the runtime is healthy. <code>goshikq-ai</code> 1.0.1 is not on PyPI, so there is no registry install command here. CPython 3.11 through 3.14. Save the program below as <code>sdk_hello.py</code> in any directory and run <code>python sdk_hello.py</code> after the package is installed. No paid model key is required. Expected lines include <code>verification:  VERIFIED</code>.</p>
+    <div class="copy-block">
+      <pre class="install"><code>{pyExample}</code></pre>
+      <button type="button" data-copy>Copy</button>
+    </div>
   </div>
 
   <div class="panel panel-typescript">
     <h2>TypeScript / JavaScript SDK</h2>
-    <p>The SDK connects your program to a Goshikq runtime that is already installed and healthy. <code>@goshikq/sdk</code> is not on npm, so there is no registry install command here. The tested setup builds ESM for Node.js 20+ and Bun. CommonJS <code>require()</code> is not supported.</p>
+    <p>Install the TypeScript SDK only after the runtime is healthy. <code>@goshikq/sdk</code> 1.0.1 is not on npm, so there is no registry install command here. The package is ESM only. Node.js 20+ runs it with <code>node hello.mjs</code>. CommonJS <code>require()</code> is not supported. Save the program below as <code>hello.mjs</code> in a project that has the package installed. Expected lines include <code>verification:  VERIFIED</code>.</p>
     <div class="copy-block">
-      <pre class="install"><code>cd sdk/typescript
-bun install
-bun run build</code></pre>
+      <pre class="install"><code>{tsExample}</code></pre>
       <button type="button" data-copy>Copy</button>
     </div>
-    <div class="copy-block">
-      <pre class="install"><code>import &#123; Agent, Goal, Runtime &#125; from "@goshikq/sdk";</code></pre>
-      <button type="button" data-copy>Copy</button>
-    </div>
-    <p>Start <code>goshikq-server</code> before <code>Runtime.run</code>. The first verified agent in this repository is the Python hello-agent on the Python tab. Its expected verification status is <code>VERIFIED</code>.</p>
   </div>
 </div>
 

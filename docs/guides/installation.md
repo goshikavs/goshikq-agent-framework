@@ -4,30 +4,21 @@ GitHub Release [`v1.0.0`](https://github.com/goshikavs/goshikq-agent-framework/r
 
 ## Published runtime
 
-These commands install the v1.0.0 archives. They do not install a language SDK.
+These commands download a pinned installer, check its SHA256, and install the v1.0.0 archives. They do not clone the repository and they do not install a language SDK. A clone is not required. The manual alternative is the release archive plus `SHA256SUMS`.
 
 ```bash
-git clone https://github.com/goshikavs/goshikq-agent-framework.git
-cd goshikq-agent-framework
-sh scripts/install.sh --version v1.0.0
+curl -fsSL -o goshikq-install.sh https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/b830e15efa2f7bd05af0769739c6cab6feb40d97/scripts/install.sh
+echo "4630175aa8868d58b634df1043abdd0fae425d78c93326401d41e5ed5a752590  goshikq-install.sh" | sha256sum -c -
+sh goshikq-install.sh --version v1.0.0
 ```
 
-Windows:
+macOS uses `shasum -a 256 -c -` instead of `sha256sum -c -`. Windows saves `scripts/install.ps1` from the same commit (`75fdf00099a9a464fff1e0d54495037cff2d1dc6046a035ad9df2b5ea5f1822f`) and runs `powershell -ExecutionPolicy Bypass -File .\goshikq-install.ps1 -Version v1.0.0`.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0
-```
+Follow the printed PATH line. `goshikq --version` prints `goshikq 1.0.0`. Then start `goshikq-server` with `DATABASE_URL=embedded`, `GOSHIKQ_AUTH_MODE=none`, and `GOSHIKQ_BIND=127.0.0.1:7400`. `curl -fsS http://127.0.0.1:7400/health` includes `"version":"1.0.0"`. The first embedded PostgreSQL start downloads a database and needs network access. `GOSHIKQ_AUTH_MODE=none` is only for this loopback process.
 
-Follow the printed PATH line. `goshikq --version` prints `goshikq 1.0.0`. Then start `goshikq-server` with `DATABASE_URL=embedded`, `GOSHIKQ_AUTH_MODE=none`, and `GOSHIKQ_BIND=127.0.0.1:7400`. `curl -fsS http://127.0.0.1:7400/health` includes `"version":"1.0.0"`.
+The installer writes `hello_agent.py` beside the binaries. Run the Python command it prints. Expected text includes `verification:  VERIFIED` and `evidence:      greetings-memory@1`.
 
-Python, after the server is healthy:
-
-```bash
-python -m pip install -e sdk/python
-python examples/hello-agent/main.py
-```
-
-Expected: `verification:  VERIFIED`. TypeScript builds with `cd sdk/typescript && bun install && bun run build`. Registry commands stay off until [the publication switch](../release/v1.0.1-publication-switch.md).
+`pip install goshikq-ai` does not work yet. `npm install @goshikq/sdk` does not work yet. After a real package install, the standalone files are `examples/quickstart/sdk_hello.py` and `examples/quickstart/hello.mjs` (`node hello.mjs`, Node.js 20+, ESM only). Registry commands stay off until [the publication switch](../release/v1.0.1-publication-switch.md).
 
 From-source install below was tested on Windows x64 (MSVC) with PostgreSQL on `127.0.0.1:55432`.
 

@@ -55,18 +55,18 @@ test.describe("Goshikq website", () => {
     const python = page.getByRole("radio", { name: "Python" });
     const typescript = page.getByRole("radio", { name: "TypeScript / JavaScript" });
     await expect(linux).toBeChecked();
-    await expect(page.getByText("sh scripts/install.sh --version v1.0.0").first()).toBeVisible();
+    await expect(page.getByText("sh goshikq-install.sh --version v1.0.0").first()).toBeVisible();
     await linux.focus();
     await page.keyboard.press("ArrowDown");
     await expect(macos).toBeChecked();
     await windows.check();
-    await expect(page.getByText("scripts/install.ps1 -Version v1.0.0").first()).toBeVisible();
-    await expect(page.getByText("sh scripts/install.sh --version v1.0.0").first()).toBeHidden();
+    await expect(page.getByText("goshikq-install.ps1 -Version v1.0.0").first()).toBeVisible();
+    await expect(page.getByText("sh goshikq-install.sh --version v1.0.0").first()).toBeHidden();
     await python.check();
-    await expect(page.getByText("python -m pip install -e sdk/python").first()).toBeVisible();
+    await expect(page.getByText("Save the program below as sdk_hello.py").first()).toBeVisible();
     await typescript.check();
-    await expect(page.getByText("bun run build").first()).toBeVisible();
-    await expect(page.getByText("python -m pip install -e sdk/python").first()).toBeHidden();
+    await expect(page.getByText("node hello.mjs").first()).toBeVisible();
+    await expect(page.getByText("Save the program below as sdk_hello.py").first()).toBeHidden();
     const body = await page.locator("body").innerText();
     expect(body).not.toMatch(/pip install goshikq-ai/);
     expect(body).not.toMatch(/npm install @goshikq\/sdk/);
@@ -75,7 +75,7 @@ test.describe("Goshikq website", () => {
     await copy.click();
     await expect(copy).toHaveText("Copied");
     const copied = await page.evaluate(() => navigator.clipboard.readText());
-    expect(copied).toContain("sh scripts/install.sh --version v1.0.0");
+    expect(copied).toContain("sh goshikq-install.sh --version v1.0.0");
   });
 
   test("published stable download links resolve", async ({ request, page }) => {

@@ -5,21 +5,21 @@ description: Run Goshikq locally with the Rust runtime, a mock model, and goal v
 
 Published native archives are [GitHub Release v1.0.0](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0). `v1.0.0-rc.1` is superseded because it shipped `jsonwebtoken` 9.3.1 (GHSA-h395-gr6q-cpjc / CVE-2026-25537). `v1.0.0-rc.2` remains published. Python and TypeScript SDKs are not on PyPI or npm.
 
-The runtime installer and the SDK install are separate. The hello-agent example must print `verification: VERIFIED`.
+The runtime installer and the SDK install are separate. Download the pinned installer, check its SHA256, and run the local file. A git clone is not required. The hello-agent example must print `verification: VERIFIED`.
 
 ```bash
-git clone https://github.com/goshikavs/goshikq-agent-framework.git
-cd goshikq-agent-framework
-sh scripts/install.sh --version v1.0.0
+curl -fsSL -o goshikq-install.sh https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/b830e15efa2f7bd05af0769739c6cab6feb40d97/scripts/install.sh
+echo "4630175aa8868d58b634df1043abdd0fae425d78c93326401d41e5ed5a752590  goshikq-install.sh" | sha256sum -c -
+sh goshikq-install.sh --version v1.0.0
 ```
 
-Windows uses `powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0`. Follow the printed PATH line. `goshikq --version` prints `goshikq 1.0.0`.
+Windows downloads `scripts/install.ps1` from that same commit and checks SHA256 `75fdf00099a9a464fff1e0d54495037cff2d1dc6046a035ad9df2b5ea5f1822f` before `powershell -ExecutionPolicy Bypass -File .\goshikq-install.ps1 -Version v1.0.0`. Follow the printed PATH line. `goshikq --version` prints `goshikq 1.0.0`.
 
 ```bash
 DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server
-python -m pip install -e sdk/python
-python examples/hello-agent/main.py
 ```
+
+Then run the `python3` command the installer prints. `pip install goshikq-ai` and `npm install @goshikq/sdk` are not available yet.
 
 Expected:
 

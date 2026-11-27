@@ -27,18 +27,23 @@ Goshikq is an open-source AI agent framework with a Rust runtime for durable exe
 
 ## Quick start
 
-The runtime and the SDK are different installs. The commands below use the published **v1.0.0** runtime. Python `goshikq-ai` and TypeScript `@goshikq/sdk` are installed from this clone. They are not registry packages yet. Details: [installation guide](docs/guides/installation.md), the [install page](https://goshikavs.github.io/goshikq-agent-framework/download/), and [GitHub Release v1.0.0](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0).
+The runtime and the SDK are different installs. The commands below download a pinned installer, check its SHA256, and install the published **v1.0.0** runtime. They do not clone this repository. Python `goshikq-ai` and TypeScript `@goshikq/sdk` are not registry packages yet. Details: [installation guide](docs/guides/installation.md), the [install page](https://goshikavs.github.io/goshikq-agent-framework/download/), and [GitHub Release v1.0.0](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0).
+
+Linux:
 
 ```bash
-git clone https://github.com/goshikavs/goshikq-agent-framework.git
-cd goshikq-agent-framework
-sh scripts/install.sh --version v1.0.0
+curl -fsSL -o goshikq-install.sh https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/b830e15efa2f7bd05af0769739c6cab6feb40d97/scripts/install.sh
+echo "4630175aa8868d58b634df1043abdd0fae425d78c93326401d41e5ed5a752590  goshikq-install.sh" | sha256sum -c -
+sh goshikq-install.sh --version v1.0.0
 ```
 
-Windows, from the same clone:
+macOS uses `shasum -a 256 -c -` instead of `sha256sum -c -`. Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/install.ps1 -Version v1.0.0
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/b830e15efa2f7bd05af0769739c6cab6feb40d97/scripts/install.ps1" -OutFile goshikq-install.ps1
+$actual = (Get-FileHash .\goshikq-install.ps1 -Algorithm SHA256).Hash.ToLower()
+if ($actual -ne "75fdf00099a9a464fff1e0d54495037cff2d1dc6046a035ad9df2b5ea5f1822f") { throw "SHA256 mismatch: $actual" }
+powershell -ExecutionPolicy Bypass -File .\goshikq-install.ps1 -Version v1.0.0
 ```
 
 Use the PATH line the script prints.
@@ -56,30 +61,11 @@ curl -fsS http://127.0.0.1:7400/health
 
 Windows PowerShell uses `$env:DATABASE_URL="embedded"`, `$env:GOSHIKQ_AUTH_MODE="none"`, `$env:GOSHIKQ_BIND="127.0.0.1:7400"`, then `goshikq-server`. Health should include `"version":"1.0.0"`. `GOSHIKQ_AUTH_MODE=none` is for this local process only.
 
-Python SDK, from the clone, with the server already running:
+The installer writes `hello_agent.py` next to the binaries. After `/health` is ok, run the `python3` or `python` line it prints. Expected lines include `verification:  VERIFIED` and `evidence:      greetings-memory@1`. That example uses only the Python standard library.
 
-```bash
-python -m pip install -e sdk/python
-python examples/hello-agent/main.py
-```
+Python SDK: `goshikq-ai` is not on PyPI. After a wheel install, save [`examples/quickstart/sdk_hello.py`](examples/quickstart/sdk_hello.py) outside the repository and run `python sdk_hello.py`. Expected: `verification:  VERIFIED`.
 
-Expected: `verification:  VERIFIED`. The model must call `record_greeting`. A sentence about Ada is not the outcome.
-
-A separate example checks a store snapshot rather than a processor response:
-
-```bash
-python examples/retail-refund/main.py
-```
-
-TypeScript SDK, from the clone. This builds the package. It does not download it from npm.
-
-```bash
-cd sdk/typescript
-bun install
-bun run build
-```
-
-Node.js 20+ imports the built ESM. CommonJS `require()` is not supported. Bun 1.4.4 runs the same build.
+TypeScript SDK: `@goshikq/sdk` is not on npm. It is ESM only and needs Node.js 20+. After the package is installed, save [`examples/quickstart/hello.mjs`](examples/quickstart/hello.mjs) and run `node hello.mjs`. CommonJS `require()` is not supported. Expected: `verification:  VERIFIED`.
 
 Troubleshooting: [`docs/troubleshooting.md`](docs/troubleshooting.md) and the [website troubleshooting page](https://goshikavs.github.io/goshikq-agent-framework/docs/troubleshooting/).
 
