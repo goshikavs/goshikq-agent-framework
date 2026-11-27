@@ -1,6 +1,6 @@
-import { ConfigurationError } from "./errors.ts";
-import { type ModelAdapter, resolveModel } from "./models.ts";
-import { Tool } from "./tool.ts";
+import { ConfigurationError } from "./errors.js";
+import { type ModelAdapter, resolveModel } from "./models.js";
+import { Tool } from "./tool.js";
 
 export type RetryPolicy = {
   max_attempts: number;

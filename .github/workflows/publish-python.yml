@@ -1,0 +1,104 @@
+# Prepared only. Does not run on push or pull request.
+# An owner must dispatch it with confirm=PUBLISH and an existing tag.
+# The tag must already be on main. The GitHub environment "pypi" must have
+# a required reviewer and a PyPI trusted publisher for goshikq-ai.
+# This file stores no registry token.
+
+name: Publish Python SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PUBLISH to upload. Any other value skips the job.
+        required: true
+        type: string
+      tag:
+        description: Existing git tag on main, for example v1.0.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: github.event.inputs.confirm == 'PUBLISH'
+    runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Require a main tag whose package version matches
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -eu
+          case "$TAG" in
+            v1.0.*) ;;
+            *) echo "refusing tag $TAG"; exit 1 ;;
+          esac
+          git rev-parse --verify "refs/tags/${TAG}^{commit}" >/dev/null
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/${TAG}^{commit}")"
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main
+          python - <<'PY'
+          import os, pathlib, tomllib
+          version = tomllib.loads(pathlib.Path("sdk/python/pyproject.toml").read_text())["project"]["version"]
+          tag = os.environ["TAG"]
+          if tag not in {version, f"v{version}"}:
+              raise SystemExit(f"tag {tag} does not match python package {version}")
+          parts = version.split(".")
+          if len(parts) != 3 or parts[0] != "1" or parts[1] != "0" or not parts[2].isdigit() or int(parts[2]) < 1:
+              raise SystemExit(f"refusing to publish {version}; v1.0.0 stays the existing release")
+          path = os.environ["GITHUB_ENV"]
+          with open(path, "a", encoding="utf-8") as fh:
+              fh.write(f"PACKAGE_VERSION={version}\n")
+          print(f"package {version} matches {tag} at {os.popen('git rev-parse HEAD').read().strip()}")
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build in a clean directory
+        run: |
+          set -eu
+          rm -rf "$RUNNER_TEMP/pypi-dist"
+          python -m pip install build
+          python -m build sdk/python --outdir "$RUNNER_TEMP/pypi-dist"
+          python - <<'PY'
+          import hashlib, os, pathlib
+          dist = pathlib.Path(os.environ["RUNNER_TEMP"]) / "pypi-dist"
+          files = sorted(p for p in dist.iterdir() if p.suffix in {".gz", ".whl"} or p.name.endswith(".tar.gz"))
+          names = [p.name for p in files]
+          version = os.environ["PACKAGE_VERSION"]
+          if names != [f"goshikq_ai-{version}-py3-none-any.whl", f"goshikq_ai-{version}.tar.gz"]:
+              raise SystemExit(f"unexpected artifacts: {names}")
+          for path in files:
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              print(f"{digest}  {path.name}")
+          PY
+      - name: Refuse an existing PyPI version
+        run: |
+          set -eu
+          code=$(curl -sS -o /tmp/pypi-version.json -w "%{http_code}" "https://pypi.org/pypi/goshikq-ai/${PACKAGE_VERSION}/json")
+          if [ "$code" = "200" ]; then
+            echo "refusing to overwrite goshikq-ai ${PACKAGE_VERSION}"
+            exit 1
+          fi
+          if [ "$code" != "404" ]; then
+            echo "unexpected PyPI status ${code}"
+            exit 1
+          fi
+      - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+        with:
+          packages-dir: ${{ runner.temp }}/pypi-dist
+          skip-existing: false
+          print-hash: true
+          attestations: true
+          verbose: true

@@ -1,4 +1,4 @@
-import { RuntimeConnectionError, RuntimeRejectedError } from "./errors.ts";
+import { RuntimeConnectionError, RuntimeRejectedError } from "./errors.js";
 
 export const A2A_PROTOCOL_VERSION = "1.0";
 

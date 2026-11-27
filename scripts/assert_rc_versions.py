@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Require stable package versions and the published v1.0.0 GitHub Release.
 
-Cargo, npm, and Python package metadata are stable `1.0.0` (PEP 440 `1.0.0`).
+The published GitHub Release and website stay on stable `1.0.0`.
+The workspace version is `1.0.1` so a future v1.0.1 release build reports that version.
+Do not point public downloads at v1.0.1 until that release and its SHA256SUMS exist.
+The Python and TypeScript SDKs prepared on this branch are `1.0.1` and are not on PyPI or npm.
 Public downloads point at the stable GitHub Release. rc.1 and rc.2 stay published.
 """
 
@@ -13,9 +16,10 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CARGO = "1.0.0"
+CARGO = "1.0.1"
 NPM = "1.0.0"
-PY = "1.0.0"
+SDK_NPM = "1.0.1"
+PY = "1.0.1"
 PUBLIC_TAG = "v1.0.0"
 PUBLIC_COMMIT = "83bc8e71edf46a20986f2380309e3d74d0ff3ab9"
 PUBLIC_HASHES = {
@@ -89,8 +93,8 @@ def check_release_status_and_download_links() -> None:
 
     site = read(ROOT / "apps" / "website" / "src" / "lib" / "site.ts")
     check('version: "1.0.0"' in site, "website SITE.version must be 1.0.0")
-    check(f'pythonVersion: "{PY}"' in site, "website SITE.pythonVersion must be 1.0.0")
-    check(f'tsVersion: "{NPM}"' in site, "website SITE.tsVersion must be 1.0.0")
+    check('pythonVersion: "1.0.0"' in site, "website SITE.pythonVersion must stay on published stable 1.0.0")
+    check('tsVersion: "1.0.0"' in site, "website SITE.tsVersion must stay on published stable 1.0.0")
     check(
         f"releases/tag/{PUBLIC_TAG}" in site,
         "website public download links must point at published v1.0.0",
@@ -153,19 +157,20 @@ def main() -> int:
     check(cargo_workspace_version() == CARGO, f"Cargo.toml workspace.package.version must be {CARGO}")
     check(pyproject_version() == PY, f"sdk/python/pyproject.toml version must be {PY} (PEP 440)")
     check(
-        '__version__ = "1.0.0"' in read(ROOT / "sdk" / "python" / "src" / "goshikq_ai" / "_version.py"),
-        "Python _version.py must be 1.0.0",
+        f'__version__ = "{PY}"' in read(ROOT / "sdk" / "python" / "src" / "goshikq_ai" / "_version.py"),
+        f"Python _version.py must be {PY}",
     )
     npm_paths = [
         ROOT / "package.json",
-        ROOT / "sdk" / "typescript" / "package.json",
         ROOT / "apps" / "studio" / "package.json",
         ROOT / "apps" / "website" / "package.json",
     ]
     for p in npm_paths:
         check(json_version(p) == NPM, f"{p.relative_to(ROOT)} version must be {NPM}")
+    sdk_pkg = ROOT / "sdk" / "typescript" / "package.json"
+    check(json_version(sdk_pkg) == SDK_NPM, f"sdk/typescript/package.json version must be {SDK_NPM}")
     ts_ver = read(ROOT / "sdk" / "typescript" / "src" / "version.ts")
-    check(f'"{NPM}"' in ts_ver, "sdk/typescript/src/version.ts must export 1.0.0")
+    check(f'VERSION = "{SDK_NPM}"' in ts_ver, "sdk/typescript/src/version.ts must export 1.0.1")
     cli = read(ROOT / "apps" / "cli" / "src" / "main.rs")
     check("CARGO_PKG_VERSION" in cli, "CLI user-agent must use CARGO_PKG_VERSION")
     check("0.1.0-alpha" not in cli, "CLI must not hardcode 0.1.0-alpha")
@@ -182,7 +187,7 @@ def main() -> int:
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         return 1
-    print(f"versions ok: cargo/npm={CARGO} python={PY} public_download={PUBLIC_TAG}")
+    print(f"versions ok: cargo={CARGO} sdk_python={PY} sdk_typescript={SDK_NPM} public_download={PUBLIC_TAG}")
     return 0
 
 

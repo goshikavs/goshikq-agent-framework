@@ -1,5 +1,6 @@
 ---
 import Marketing from "../layouts/Marketing.astro";
+import InstallJourney from "../components/InstallJourney.astro";
 import { SITE } from "../lib/site";
 
 const archives = [
@@ -17,6 +18,9 @@ const archives = [
     <h1>Install Goshikq v1.0.0</h1>
     <p class="lede"><strong>This is the stable GitHub Release <a href={SITE.githubPrerelease}><code>v1.0.0</code></a>.</strong> <code>v1.0.0-rc.1</code> is superseded because it shipped <code>jsonwebtoken</code> 9.3.1 (GHSA-h395-gr6q-cpjc / CVE-2026-25537). <code>v1.0.0-rc.2</code> remains published. There is no PyPI, npm, or crates.io package. Python <code>{SITE.pythonPackage}=={SITE.pythonVersion}</code> and TypeScript <code>{SITE.tsPackage}@{SITE.tsVersion}</code> install from source.</p>
     <p><a class="btn btn-primary" href={SITE.githubPrerelease}>Open the GitHub release</a></p>
+    <h2>Install, then run an agent</h2>
+    <p>Choose one tab. Operating-system tabs install the v1.0.0 runtime. Language tabs install an SDK that talks to that runtime. Registry commands are omitted because those packages are not published. The switch that turns them on is <a href={`${SITE.github}/blob/main/docs/release/v1.0.1-publication-switch.md`}>the publication checklist</a>.</p>
+    <InstallJourney />
     <h2>Native archives</h2>
     <p>Binaries were built from commit <code>83bc8e71edf46a20986f2380309e3d74d0ff3ab9</code>. After download, verify:</p>
     <pre class="install"><code>sha256sum -c SHA256SUMS</code></pre>

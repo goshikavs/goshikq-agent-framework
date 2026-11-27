@@ -1133,7 +1133,7 @@ dependencies = [
 
 [[package]]
 name = "goshikq-bench"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "clap",
@@ -1147,7 +1147,7 @@ dependencies = [
 
 [[package]]
 name = "goshikq-cli"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1163,7 +1163,7 @@ dependencies = [
 
 [[package]]
 name = "goshikq-core"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "goshikq-protocol",
@@ -1180,7 +1180,7 @@ dependencies = [
 
 [[package]]
 name = "goshikq-protocol"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "jsonschema",
@@ -1194,7 +1194,7 @@ dependencies = [
 
 [[package]]
 name = "goshikq-runtime"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "dashmap",
@@ -1213,7 +1213,7 @@ dependencies = [
 
 [[package]]
 name = "goshikq-server"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1250,7 +1250,7 @@ dependencies = [
 
 [[package]]
 name = "goshikq-storage"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "goshikq-core",

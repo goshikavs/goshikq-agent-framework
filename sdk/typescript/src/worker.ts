@@ -1,10 +1,10 @@
-import { Agent } from "./agent.ts";
-import { RuntimeClient } from "./client.ts";
-import { CancellationError, ModelAdapterError, RuntimeConnectionError, RuntimeRejectedError, ToolError } from "./errors.ts";
-import { Goal } from "./goal.ts";
-import { jsonable } from "./json.ts";
-import { StateProvider, StateSnapshot } from "./state.ts";
-import { WORKER_CAPABILITIES } from "./version.ts";
+import { Agent } from "./agent.js";
+import { RuntimeClient } from "./client.js";
+import { CancellationError, ModelAdapterError, RuntimeConnectionError, RuntimeRejectedError, ToolError } from "./errors.js";
+import { Goal } from "./goal.js";
+import { jsonable } from "./json.js";
+import { StateProvider, StateSnapshot } from "./state.js";
+import { WORKER_CAPABILITIES } from "./version.js";
 
 export type WorkerIdentity = {
   workerId: string;

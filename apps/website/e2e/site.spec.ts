@@ -46,6 +46,38 @@ test.describe("Goshikq website", () => {
     await expect(page.locator('a[href*="crates.io"]')).toHaveCount(0);
   });
 
+  test("install tabs, copy, and keyboard selection", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.goto("/");
+    const linux = page.getByRole("radio", { name: "Linux" });
+    const macos = page.getByRole("radio", { name: "macOS" });
+    const windows = page.getByRole("radio", { name: "Windows" });
+    const python = page.getByRole("radio", { name: "Python" });
+    const typescript = page.getByRole("radio", { name: "TypeScript / JavaScript" });
+    await expect(linux).toBeChecked();
+    await expect(page.getByText("sh goshikq-install.sh --version v1.0.0").first()).toBeVisible();
+    await linux.focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(macos).toBeChecked();
+    await windows.check();
+    await expect(page.getByText("goshikq-install.ps1 -Version v1.0.0").first()).toBeVisible();
+    await expect(page.getByText("sh goshikq-install.sh --version v1.0.0").first()).toBeHidden();
+    await python.check();
+    await expect(page.getByText("Save the program below as sdk_hello.py").first()).toBeVisible();
+    await typescript.check();
+    await expect(page.getByText("node hello.mjs").first()).toBeVisible();
+    await expect(page.getByText("Save the program below as sdk_hello.py").first()).toBeHidden();
+    const body = await page.locator("body").innerText();
+    expect(body).not.toMatch(/pip install goshikq-ai/);
+    expect(body).not.toMatch(/npm install @goshikq\/sdk/);
+    await page.getByRole("radio", { name: "Linux" }).check();
+    const copy = page.locator(".panel-linux [data-copy]").first();
+    await copy.click();
+    await expect(copy).toHaveText("Copied");
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toContain("sh goshikq-install.sh --version v1.0.0");
+  });
+
   test("published stable download links resolve", async ({ request, page }) => {
     test.setTimeout(90_000);
     await page.goto("/download/");

@@ -1,7 +1,7 @@
 import type { ZodType } from "zod";
-import { ConfigurationError, SchemaValidationError, ToolError } from "./errors.ts";
-import { jsonable } from "./json.ts";
-import type { StateSnapshot } from "./state.ts";
+import { ConfigurationError, SchemaValidationError, ToolError } from "./errors.js";
+import { jsonable } from "./json.js";
+import type { StateSnapshot } from "./state.js";
 
 export type Effect =
   | "READ_ONLY"

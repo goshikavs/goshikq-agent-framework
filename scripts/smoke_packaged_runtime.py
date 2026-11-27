@@ -158,7 +158,7 @@ def main() -> int:
         print("cli --version:", printed)
         if "goshikq" not in (printed + help_out.stdout).lower():
             raise SystemExit("CLI help/version did not mention goshikq")
-        expected = os.environ.get("EXPECTED_VERSION", "1.0.0")
+        expected = os.environ.get("EXPECTED_VERSION", "1.0.1")
         if expected not in printed.replace(",", " ").split():
             raise SystemExit(f"CLI version {printed!r} is not {expected}")
         srv_help = subprocess.run([str(server), "--help"], capture_output=True, text=True, timeout=30)

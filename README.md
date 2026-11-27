@@ -25,6 +25,50 @@ Goshikq is an open-source AI agent framework with a Rust runtime for durable exe
 - Public website: [goshikavs.github.io/goshikq-agent-framework](https://goshikavs.github.io/goshikq-agent-framework/) ([`apps/website`](apps/website), Astro + Starlight) · `bun run website:build`
 - Maintainer: [goshikavs](https://github.com/goshikavs)
 
+## Quick start
+
+The runtime and the SDK are different installs. The commands below download a pinned installer, check its SHA256, and install the published **v1.0.0** runtime. They do not clone this repository. Python `goshikq-ai` and TypeScript `@goshikq/sdk` are not registry packages yet. Details: [installation guide](docs/guides/installation.md), the [install page](https://goshikavs.github.io/goshikq-agent-framework/download/), and [GitHub Release v1.0.0](https://github.com/goshikavs/goshikq-agent-framework/releases/tag/v1.0.0).
+
+Linux:
+
+```bash
+curl -fsSL -o goshikq-install.sh https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/b830e15efa2f7bd05af0769739c6cab6feb40d97/scripts/install.sh
+echo "4630175aa8868d58b634df1043abdd0fae425d78c93326401d41e5ed5a752590  goshikq-install.sh" | sha256sum -c -
+sh goshikq-install.sh --version v1.0.0
+```
+
+macOS uses `shasum -a 256 -c -` instead of `sha256sum -c -`. Windows:
+
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/goshikavs/goshikq-agent-framework/b830e15efa2f7bd05af0769739c6cab6feb40d97/scripts/install.ps1" -OutFile goshikq-install.ps1
+$actual = (Get-FileHash .\goshikq-install.ps1 -Algorithm SHA256).Hash.ToLower()
+if ($actual -ne "75fdf00099a9a464fff1e0d54495037cff2d1dc6046a035ad9df2b5ea5f1822f") { throw "SHA256 mismatch: $actual" }
+powershell -ExecutionPolicy Bypass -File .\goshikq-install.ps1 -Version v1.0.0
+```
+
+Use the PATH line the script prints.
+
+```bash
+goshikq --version
+```
+
+Expected: `goshikq 1.0.0`.
+
+```bash
+DATABASE_URL=embedded GOSHIKQ_AUTH_MODE=none GOSHIKQ_BIND=127.0.0.1:7400 goshikq-server
+curl -fsS http://127.0.0.1:7400/health
+```
+
+Windows PowerShell uses `$env:DATABASE_URL="embedded"`, `$env:GOSHIKQ_AUTH_MODE="none"`, `$env:GOSHIKQ_BIND="127.0.0.1:7400"`, then `goshikq-server`. Health should include `"version":"1.0.0"`. `GOSHIKQ_AUTH_MODE=none` is for this local process only.
+
+The installer writes `hello_agent.py` next to the binaries. After `/health` is ok, run the `python3` or `python` line it prints. Expected lines include `verification:  VERIFIED` and `evidence:      greetings-memory@1`. That example uses only the Python standard library.
+
+Python SDK: `goshikq-ai` is not on PyPI. After a wheel install, save [`examples/quickstart/sdk_hello.py`](examples/quickstart/sdk_hello.py) outside the repository and run `python sdk_hello.py`. Expected: `verification:  VERIFIED`.
+
+TypeScript SDK: `@goshikq/sdk` is not on npm. It is ESM only and needs Node.js 20+. After the package is installed, save [`examples/quickstart/hello.mjs`](examples/quickstart/hello.mjs) and run `node hello.mjs`. CommonJS `require()` is not supported. Expected: `verification:  VERIFIED`.
+
+Troubleshooting: [`docs/troubleshooting.md`](docs/troubleshooting.md) and the [website troubleshooting page](https://goshikavs.github.io/goshikq-agent-framework/docs/troubleshooting/).
+
 ## Why Goshikq?
 
 Existing frameworks already provide orchestration, retries, tracing, and checkpoints. Goshikq’s intended difference is the *combination* of:
@@ -141,7 +185,54 @@ macOS and Linux, from a clone:
 sh scripts/install.sh --version v1.0.0
 ```
 
-The installer puts `goshikq` and `goshikq-server` on a user bin directory and prints the PATH line. It does not install the Python SDK. The SDK is not on PyPI; install it from this repository with `python -m pip install -e sdk/python`.
+The installer puts `goshikq` and `goshikq-server` on a user bin directory and prints the PATH line. It installs the **runtime and CLI**, not a language SDK.
+
+### Python SDK
+
+What you install: the `goshikq-ai` package, which talks to a running `goshikq-server`. It does not contain the runtime.
+
+Verified command today, from a clone:
+
+```bash
+python -m pip install -e sdk/python
+```
+
+`pip install goshikq-ai` is **not** available. Package `1.0.1` is prepared and unpublished. Python support is CPython 3.11 through 3.14. The runtime must be reachable at `GOSHIKQ_RUNTIME_URL` (default `http://127.0.0.1:7400`).
+
+```python
+from goshikq_ai import Agent, Goal, Runtime
+from goshikq_ai.models import MockModel, ModelTurn
+
+agent = Agent(name="hello", model=MockModel(script=[ModelTurn(content="done")]))
+result = Runtime(agent).run_sync(Goal(description="Say hello"))
+print(result.status, result.verification_status)
+```
+
+A goal is `VERIFIED` only when its predicate accepts an authoritative snapshot. A finished tool call is not that result. If import fails, install from `sdk/python` in this repository rather than from PyPI.
+
+### TypeScript and JavaScript SDK
+
+What you install: `@goshikq/sdk`, an ESM package for Node.js 20+ and Bun. It is not a runtime.
+
+Verified command today, from a clone, after `bun install` inside `sdk/typescript`:
+
+```bash
+cd sdk/typescript && bun install && bun run build
+```
+
+`npm install @goshikq/sdk` is **not** available. Package `1.0.1` is prepared and unpublished. The package entry is ESM (`import`), with TypeScript declarations. CommonJS `require()` is not supported. A consumer that installs the packed tarball imports JavaScript directly:
+
+```javascript
+import { Agent, Goal, Runtime, MockModel } from "@goshikq/sdk";
+```
+
+Bun can run the same import. Both were tested from a clean project outside the repository on this branch. Point `GOSHIKQ_RUNTIME_URL` at the runtime before `Runtime.run`.
+
+### Rust CLI
+
+What you install: the `goshikq` and `goshikq-server` binaries from the **v1.0.0** GitHub Release. The crates are not on crates.io. Internal crates set `publish = false` because they are path-linked workspace crates, not a supported external Rust library API.
+
+Windows ARM64 is experimental. On the machine that prepared this branch, `scripts/install.ps1 -Version v1.0.0` installed `goshikq-1.0.0-windows-arm64.zip`, the SHA256 matched the published `SHA256SUMS` entry, and `goshikq --version` printed `goshikq 1.0.0`. Linux, macOS, and Windows x64 archives were not installed on that host. `scripts/install.sh` was not executed.
 
 ## Quickstart (no paid API keys)
 

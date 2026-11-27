@@ -1,11 +1,11 @@
-import { Agent } from "./agent.ts";
-import { RuntimeClient } from "./client.ts";
-import { CancellationError } from "./errors.ts";
-import { Goal } from "./goal.ts";
-import { ExecutionResult, TERMINAL_STATUSES, type VerificationResult } from "./result.ts";
-import { StateProvider } from "./state.ts";
-import { PROTOCOL_VERSION, SOURCE_FRAMEWORK, VERSION, WORKER_CAPABILITIES } from "./version.ts";
-import { Worker } from "./worker.ts";
+import { Agent } from "./agent.js";
+import { RuntimeClient } from "./client.js";
+import { CancellationError } from "./errors.js";
+import { Goal } from "./goal.js";
+import { ExecutionResult, TERMINAL_STATUSES, type VerificationResult } from "./result.js";
+import { StateProvider } from "./state.js";
+import { PROTOCOL_VERSION, SOURCE_FRAMEWORK, VERSION, WORKER_CAPABILITIES } from "./version.js";
+import { Worker } from "./worker.js";
 
 export type RuntimeOptions = {
   endpoint?: string;

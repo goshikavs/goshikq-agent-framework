@@ -1,5 +1,5 @@
-import { RuntimeConnectionError, RuntimeRejectedError } from "./errors.ts";
-import { VERSION } from "./version.ts";
+import { RuntimeConnectionError, RuntimeRejectedError } from "./errors.js";
+import { VERSION } from "./version.js";
 
 export const DEFAULT_ENDPOINT = "http://127.0.0.1:7400";
 

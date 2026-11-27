@@ -1,5 +1,5 @@
-import { ConfigurationError, ModelAdapterError } from "./errors.ts";
-import { jsonable } from "./json.ts";
+import { ConfigurationError, ModelAdapterError } from "./errors.js";
+import { jsonable } from "./json.js";
 
 export type Capabilities = {
   streaming: boolean;
