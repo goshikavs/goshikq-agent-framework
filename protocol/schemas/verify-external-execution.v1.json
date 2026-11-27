@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VerifyExternalExecutionRequest",
+  "description": "Authoritative outcome gate. `evidence_source` must not be the framework name.",
+  "type": "object",
+  "properties": {
+    "evidence_fingerprint": {
+      "type": "string"
+    },
+    "evidence_source": {
+      "type": "string"
+    },
+    "predicate_name": {
+      "type": "string"
+    },
+    "predicate_passed": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "predicate_name",
+    "predicate_passed",
+    "evidence_source",
+    "evidence_fingerprint"
+  ]
+}

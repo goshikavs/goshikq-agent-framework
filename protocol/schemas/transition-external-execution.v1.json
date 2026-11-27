@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TransitionExternalExecutionRequest",
+  "description": "Move an external execution along [`allow_transition`]. Verification states are rejected.",
+  "type": "object",
+  "properties": {
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "evidence": {
+      "default": null
+    },
+    "external_run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "external_thread_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "lifecycle": {
+      "$ref": "#/$defs/ExternalLifecycle"
+    },
+    "result": {
+      "default": null
+    }
+  },
+  "required": [
+    "lifecycle"
+  ],
+  "$defs": {
+    "ExternalLifecycle": {
+      "description": "Lifecycle of one external framework execution coordinated by Goshikq.\n\nNames are stable wire values. Do not collapse `EXTERNAL_COMPLETED` into `VERIFIED`.",
+      "type": "string",
+      "enum": [
+        "NOT_DISPATCHED",
+        "DISPATCH_IN_PROGRESS",
+        "DISPATCH_OUTCOME_UNKNOWN",
+        "EXTERNAL_RUNNING",
+        "EXTERNAL_SUSPENDED",
+        "EXTERNAL_COMPLETED",
+        "EXTERNAL_FAILED",
+        "RECONCILIATION_REQUIRED",
+        "AWAITING_VERIFICATION",
+        "VERIFIED",
+        "VERIFICATION_FAILED",
+        "VERIFICATION_INCONCLUSIVE",
+        "CANCEL_REQUESTED",
+        "CANCELLED"
+      ]
+    }
+  }
+}

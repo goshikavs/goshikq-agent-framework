@@ -3,6 +3,7 @@ pub mod admin;
 pub mod approvals;
 pub mod catalog;
 pub mod events;
+pub mod external;
 pub mod metrics;
 pub mod otlp;
 pub mod runs;
@@ -133,6 +134,10 @@ pub fn build(state: AppState) -> (Router, utoipa::openapi::OpenApi) {
         .routes(routes!(tasks::hierarchy))
         .routes(routes!(tasks::start_run))
         .routes(routes!(tasks::handoff))
+        .routes(routes!(external::register_external_execution, external::list_external_executions))
+        .routes(routes!(external::get_external_execution))
+        .routes(routes!(external::transition_external_execution))
+        .routes(routes!(external::verify_external_execution))
         .routes(routes!(tasks::list_shared, tasks::put_shared))
         .routes(routes!(tasks::shared_history))
         .routes(routes!(a2a::agent_card))

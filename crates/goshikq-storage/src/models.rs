@@ -516,6 +516,32 @@ pub struct RevalidationResultRow {
 }
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+pub struct ExternalExecutionRow {
+    pub id: Uuid,
+    pub project_id: Uuid,
+    pub run_id: Uuid,
+    pub parent_run_id: Option<Uuid>,
+    pub task_id: Option<Uuid>,
+    pub tenant_id: Option<Uuid>,
+    pub framework: String,
+    pub adapter_version: String,
+    pub framework_version: String,
+    pub external_run_id: Option<String>,
+    pub external_thread_id: Option<String>,
+    pub correlation_id: String,
+    pub trace_id: Option<String>,
+    pub idempotency_key: String,
+    pub dispatch_id: String,
+    pub lifecycle: String,
+    pub capabilities: Value,
+    pub evidence: Value,
+    pub result: Option<Value>,
+    pub error: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct CoverageReportRow {
     pub id: Uuid,
     pub run_id: Uuid,
