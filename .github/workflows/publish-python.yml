@@ -62,7 +62,7 @@ jobs:
               fh.write(f"PACKAGE_VERSION={version}\n")
           print(f"package {version} matches {tag} at {os.popen('git rev-parse HEAD').read().strip()}")
           PY
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Build in a clean directory
