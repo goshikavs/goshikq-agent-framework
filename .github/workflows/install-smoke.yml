@@ -47,7 +47,7 @@ jobs:
             kind: windows
             experimental: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install published v1.0.0 and verify an outcome
         if: matrix.kind == 'unix'
         run: sh scripts/install-smoke.sh
