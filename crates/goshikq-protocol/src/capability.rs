@@ -54,6 +54,7 @@ impl FrameworkCapabilityManifest {
             goshikq_typescript(),
             otel_http(),
             langgraph(),
+            langgraph_orchestrated(),
             openai_agents(),
             mcp(),
             a2a(),
@@ -143,6 +144,23 @@ fn langgraph() -> FrameworkCapabilityManifest {
     }
 }
 
+fn langgraph_orchestrated() -> FrameworkCapabilityManifest {
+    FrameworkCapabilityManifest {
+        framework: "langgraph-orchestrated".into(),
+        framework_version: "1.2.24".into(),
+        adapter_version: env!("CARGO_PKG_VERSION").into(),
+        trace_support: CapabilityLevel::Partial,
+        tool_event_support: CapabilityLevel::Partial,
+        state_snapshot_support: CapabilityLevel::Partial,
+        approval_support: CapabilityLevel::Unsupported,
+        action_interception_support: CapabilityLevel::Unsupported,
+        pause_resume_support: CapabilityLevel::Partial,
+        outcome_verification_support: CapabilityLevel::Partial,
+        replay_support: CapabilityLevel::Unsupported,
+        notes: "v1.1.0-dev adapter. LangGraph 1.2.24 StateGraph remains the executor. thread_id is the external session. interrupt/Command resume is partial. Native cancellation is unsupported and is not reported as cancelled. Completion becomes AWAITING_VERIFICATION. Framework output is not authoritative evidence and cannot set VERIFIED. The v1.0.0 langgraph manifest remains the OTLP ingest path.".into(),
+    }
+}
+
 fn openai_agents() -> FrameworkCapabilityManifest {
     FrameworkCapabilityManifest {
         framework: "openai-agents".into(),
@@ -192,6 +210,7 @@ mod tests {
         assert!(names.contains(&"goshikq-typescript".into()));
         assert!(names.contains(&"otel".into()));
         assert!(names.contains(&"langgraph".into()));
+        assert!(names.contains(&"langgraph-orchestrated".into()));
         assert!(names.contains(&"openai-agents".into()));
         assert!(names.contains(&"mcp".into()));
         assert!(names.contains(&"a2a".into()));

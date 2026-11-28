@@ -122,7 +122,7 @@ jobs:
           LOG="${RUNNER_TEMP:-/tmp}/goshikq-server.log"
           "$BIN" > "$LOG" 2>&1 &
           echo $! > /tmp/goshikq-server.pid
-          python -m pip install -e sdk/python httpx pytest
+          python -m pip install -e "sdk/python[dev,interop]" httpx pytest
           ok=0
           for i in $(seq 1 120); do
             if curl -fsS http://127.0.0.1:7400/ready; then ok=1; break; fi
@@ -156,7 +156,7 @@ jobs:
       - name: SDK unit tests
         working-directory: sdk/python
         run: |
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ".[dev,interop]"
           pytest
 
   python-sdk:
@@ -169,7 +169,7 @@ jobs:
       - name: Install, test, lint, pack
         working-directory: sdk/python
         run: |
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ".[dev,interop]"
           pytest
           ruff check src tests
           python -m build --wheel

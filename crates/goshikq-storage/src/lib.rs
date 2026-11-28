@@ -5,6 +5,7 @@ pub mod approvals;
 pub mod catalog;
 pub mod events;
 pub mod evidence;
+pub mod external;
 pub mod evidence_graph;
 pub mod journal;
 pub mod leases;

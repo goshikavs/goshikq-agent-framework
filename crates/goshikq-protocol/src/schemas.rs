@@ -55,6 +55,18 @@ pub fn all() -> Vec<NamedSchema> {
             file_name: "action-verify-result.v1.json",
             schema: schema_for!(crate::ActionVerifyResult),
         },
+        NamedSchema {
+            file_name: "register-external-execution.v1.json",
+            schema: schema_for!(crate::RegisterExternalExecutionRequest),
+        },
+        NamedSchema {
+            file_name: "transition-external-execution.v1.json",
+            schema: schema_for!(crate::TransitionExternalExecutionRequest),
+        },
+        NamedSchema {
+            file_name: "verify-external-execution.v1.json",
+            schema: schema_for!(crate::VerifyExternalExecutionRequest),
+        },
     ]
 }
 

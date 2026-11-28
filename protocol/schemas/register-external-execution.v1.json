@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RegisterExternalExecutionRequest",
+  "description": "Register one external execution under an existing Goshikq run.",
+  "type": "object",
+  "properties": {
+    "adapter_version": {
+      "type": "string"
+    },
+    "capabilities": {
+      "default": null
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "dispatch_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "framework": {
+      "type": "string"
+    },
+    "framework_version": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "parent_run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "default": null
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "default": null
+    },
+    "tenant_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "default": null
+    },
+    "trace_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "framework",
+    "adapter_version",
+    "framework_version",
+    "idempotency_key",
+    "correlation_id"
+  ]
+}
